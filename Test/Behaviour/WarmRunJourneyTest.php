@@ -39,7 +39,7 @@ use RuntimeException;
 /**
  * A cache warm run, from `bin/magento` to a closed row.
  */
-final class WarmRunJourneyTest extends TestCase
+class WarmRunJourneyTest extends TestCase
 {
     private const SECTION = 'commerce_cachetools';
     private const NOW = '2026-08-27 09:00:00';
@@ -84,14 +84,14 @@ final class WarmRunJourneyTest extends TestCase
     {
         $runId = $this->queueWarm();
 
-        self::assertNotNull($runId);
-        self::assertCount(3, $this->queue, '250 products in batches of 100.');
-        self::assertSame(WarmRunInterface::STATUS_RUNNING, $this->runs->statusOf($runId));
+        $this->assertNotNull($runId);
+        $this->assertCount(3, $this->queue, '250 products in batches of 100.');
+        $this->assertSame(WarmRunInterface::STATUS_RUNNING, $this->runs->statusOf($runId));
 
         $this->consumeEverythingQueued();
 
-        self::assertCount(250, $this->warmed);
-        self::assertSame(WarmRunInterface::STATUS_COMPLETE, $this->runs->statusOf($runId));
+        $this->assertCount(250, $this->warmed);
+        $this->assertSame(WarmRunInterface::STATUS_COMPLETE, $this->runs->statusOf($runId));
     }
 
     /**
@@ -105,8 +105,8 @@ final class WarmRunJourneyTest extends TestCase
         $this->consume(array_shift($this->queue));
         $this->consume(array_shift($this->queue));
 
-        self::assertSame(WarmRunInterface::STATUS_RUNNING, $this->runs->statusOf($runId));
-        self::assertSame(200, $this->runs->run($runId)[WarmRunInterface::PROCESSED_PRODUCTS]);
+        $this->assertSame(WarmRunInterface::STATUS_RUNNING, $this->runs->statusOf($runId));
+        $this->assertSame(200, $this->runs->run($runId)[WarmRunInterface::PROCESSED_PRODUCTS]);
     }
 
     /**
@@ -120,8 +120,8 @@ final class WarmRunJourneyTest extends TestCase
         $runId = $this->queueWarm();
         $this->consumeEverythingQueued();
 
-        self::assertSame(WarmRunInterface::STATUS_COMPLETE, $this->runs->statusOf($runId));
-        self::assertSame(250, $this->runs->run($runId)[WarmRunInterface::FAILED_PRODUCTS]);
+        $this->assertSame(WarmRunInterface::STATUS_COMPLETE, $this->runs->statusOf($runId));
+        $this->assertSame(250, $this->runs->run($runId)[WarmRunInterface::FAILED_PRODUCTS]);
     }
 
     /**
@@ -142,8 +142,8 @@ final class WarmRunJourneyTest extends TestCase
         $this->lockHeld = true;
         $this->consume($message);
 
-        self::assertCount($warmedAfterFirst, $this->warmed, 'A redelivery must not warm the batch twice.');
-        self::assertNotSame([], $this->logger->warnings, 'And it must say that the run will not reach its total.');
+        $this->assertCount($warmedAfterFirst, $this->warmed, 'A redelivery must not warm the batch twice.');
+        $this->assertNotSame([], $this->logger->warnings, 'And it must say that the run will not reach its total.');
     }
 
     /**
@@ -157,8 +157,8 @@ final class WarmRunJourneyTest extends TestCase
 
         $second = $this->queueWarm();
 
-        self::assertNull($second);
-        self::assertSame([], $this->queue, 'Nothing should have been queued for the refused run.');
+        $this->assertNull($second);
+        $this->assertSame([], $this->queue, 'Nothing should have been queued for the refused run.');
     }
 
     public function testOnceARunHasClosedTheNextOneStarts(): void
@@ -168,8 +168,8 @@ final class WarmRunJourneyTest extends TestCase
 
         $second = $this->queueWarm();
 
-        self::assertNotNull($second);
-        self::assertNotSame($first, $second);
+        $this->assertNotNull($second);
+        $this->assertNotSame($first, $second);
     }
 
     /**
@@ -182,14 +182,14 @@ final class WarmRunJourneyTest extends TestCase
         $this->consume(array_shift($this->queue));
 
         // Still moving as far as the reaper can tell.
-        self::assertSame(0, $this->reap());
-        self::assertSame(WarmRunInterface::STATUS_RUNNING, $this->runs->statusOf($runId));
+        $this->assertSame(0, $this->reap());
+        $this->assertSame(WarmRunInterface::STATUS_RUNNING, $this->runs->statusOf($runId));
 
         // Two days pass and the remaining batches never arrive.
         $this->runs->noProgressSince($runId, $this->hoursAgo(48));
 
-        self::assertSame(1, $this->reap());
-        self::assertSame(WarmRunInterface::STATUS_STALE, $this->runs->statusOf($runId));
+        $this->assertSame(1, $this->reap());
+        $this->assertSame(WarmRunInterface::STATUS_STALE, $this->runs->statusOf($runId));
     }
 
     /**
@@ -204,7 +204,7 @@ final class WarmRunJourneyTest extends TestCase
 
         $this->reap();
 
-        self::assertNotNull($this->queueWarm(), 'A reaped run must not keep blocking its type.');
+        $this->assertNotNull($this->queueWarm(), 'A reaped run must not keep blocking its type.');
     }
 
     /**
@@ -216,9 +216,9 @@ final class WarmRunJourneyTest extends TestCase
 
         $runId = $this->queueWarm();
 
-        self::assertNotNull($runId);
-        self::assertSame(WarmRunInterface::STATUS_COMPLETE, $this->runs->statusOf($runId));
-        self::assertSame([], $this->queue);
+        $this->assertNotNull($runId);
+        $this->assertSame(WarmRunInterface::STATUS_COMPLETE, $this->runs->statusOf($runId));
+        $this->assertSame([], $this->queue);
     }
 
     /**
@@ -231,8 +231,8 @@ final class WarmRunJourneyTest extends TestCase
 
         $this->consume('this is not a serialized batch');
 
-        self::assertSame(0, $this->runs->run($runId)[WarmRunInterface::PROCESSED_PRODUCTS]);
-        self::assertSame(WarmRunInterface::STATUS_RUNNING, $this->runs->statusOf($runId));
+        $this->assertSame(0, $this->runs->run($runId)[WarmRunInterface::PROCESSED_PRODUCTS]);
+        $this->assertSame(WarmRunInterface::STATUS_RUNNING, $this->runs->statusOf($runId));
     }
 
     private function queueWarm(string $type = BatchQueuer::TYPE_SIMPLE): ?int

@@ -21,7 +21,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-final class ProductCacheWarmerTest extends TestCase
+class ProductCacheWarmerTest extends TestCase
 {
     /** @var array<int, array{sku: string, imageType: string}> */
     private array $resolved = [];
@@ -60,7 +60,7 @@ final class ProductCacheWarmerTest extends TestCase
 
     public function testItSatisfiesTheWarmTaskContract(): void
     {
-        self::assertInstanceOf(WarmTaskInterface::class, $this->warmer());
+        $this->assertInstanceOf(WarmTaskInterface::class, $this->warmer());
     }
 
     public function testEveryImageRoleIsResolvedForEveryProduct(): void
@@ -72,9 +72,9 @@ final class ProductCacheWarmerTest extends TestCase
             ProductImageUrlResolverInterface::IMAGE_LARGE,
         ])->warm([10, 11]);
 
-        self::assertSame(2, $result->total);
-        self::assertSame(2, $result->warmed);
-        self::assertCount(4, $this->resolved);
+        $this->assertSame(2, $result->total);
+        $this->assertSame(2, $result->warmed);
+        $this->assertCount(4, $this->resolved);
     }
 
     /**
@@ -85,7 +85,7 @@ final class ProductCacheWarmerTest extends TestCase
     {
         $this->warmer(productType: ConfigurableType::TYPE_CODE)->warm([10]);
 
-        self::assertSame(ConfigurableType::TYPE_CODE, $this->collectionsBuilt[0]['type']);
+        $this->assertSame(ConfigurableType::TYPE_CODE, $this->collectionsBuilt[0]['type']);
     }
 
     /**
@@ -97,10 +97,10 @@ final class ProductCacheWarmerTest extends TestCase
         $this->items = [$this->product('SKU-1')];
 
         $this->warmer(warmSwatches: false)->warm([10]);
-        self::assertSame([], $this->swatched);
+        $this->assertSame([], $this->swatched);
 
         $this->warmer(warmSwatches: true)->warm([10]);
-        self::assertSame(['SKU-1'], $this->swatched);
+        $this->assertSame(['SKU-1'], $this->swatched);
     }
 
     /**
@@ -111,14 +111,14 @@ final class ProductCacheWarmerTest extends TestCase
     {
         $this->warmer(loadAttributes: ['image', 'small_image'])->warm([10]);
 
-        self::assertSame([['image', 'small_image']], $this->selectedAttributes);
+        $this->assertSame([['image', 'small_image']], $this->selectedAttributes);
     }
 
     public function testNoAttributesAreSelectedWhenNoneAreConfigured(): void
     {
         $this->warmer()->warm([10]);
 
-        self::assertSame([], $this->selectedAttributes);
+        $this->assertSame([], $this->selectedAttributes);
     }
 
     /**
@@ -129,7 +129,7 @@ final class ProductCacheWarmerTest extends TestCase
     {
         $this->warmer()->warm([10]);
 
-        self::assertTrue($this->flags['has_stock_status_filter']);
+        $this->assertTrue($this->flags['has_stock_status_filter']);
     }
 
     /**
@@ -143,9 +143,9 @@ final class ProductCacheWarmerTest extends TestCase
 
         $result = $this->warmer()->warm([10, 11, 12]);
 
-        self::assertSame(3, $result->total);
-        self::assertSame(2, $result->warmed);
-        self::assertSame(1, $result->getFailed());
+        $this->assertSame(3, $result->total);
+        $this->assertSame(2, $result->warmed);
+        $this->assertSame(1, $result->getFailed());
     }
 
     /**
@@ -158,9 +158,9 @@ final class ProductCacheWarmerTest extends TestCase
 
         $result = $this->warmer()->warm([10]);
 
-        self::assertCount(1, $result->messages);
-        self::assertStringContainsString('SKU-1', $result->messages[0]);
-        self::assertCount(1, $this->logger->errors);
+        $this->assertCount(1, $result->messages);
+        $this->assertStringContainsString('SKU-1', $result->messages[0]);
+        $this->assertCount(1, $this->logger->errors);
     }
 
     /**
@@ -171,9 +171,9 @@ final class ProductCacheWarmerTest extends TestCase
     {
         $result = $this->warmer()->warm([10, 11]);
 
-        self::assertSame(0, $result->total);
-        self::assertSame(0, $result->getFailed());
-        self::assertSame([], $result->messages);
+        $this->assertSame(0, $result->total);
+        $this->assertSame(0, $result->getFailed());
+        $this->assertSame([], $result->messages);
     }
 
     /**

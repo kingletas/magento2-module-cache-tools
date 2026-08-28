@@ -15,7 +15,7 @@ use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
-final class ReapRunsCommandTest extends TestCase
+class ReapRunsCommandTest extends TestCase
 {
     private int $reaped = 2;
     private ?\Throwable $reapFailure = null;
@@ -34,8 +34,8 @@ final class ReapRunsCommandTest extends TestCase
     {
         $tester = $this->tester();
 
-        self::assertSame(Command::SUCCESS, $tester->execute([]));
-        self::assertStringContainsString('Reaped 2 stale run(s)', $tester->getDisplay());
+        $this->assertSame(Command::SUCCESS, $tester->execute([]));
+        $this->assertStringContainsString('Reaped 2 stale run(s)', $tester->getDisplay());
     }
 
     /**
@@ -48,8 +48,8 @@ final class ReapRunsCommandTest extends TestCase
 
         $tester = $this->tester();
 
-        self::assertSame(Command::SUCCESS, $tester->execute([]));
-        self::assertStringContainsString('No stale runs to reap', $tester->getDisplay());
+        $this->assertSame(Command::SUCCESS, $tester->execute([]));
+        $this->assertStringContainsString('No stale runs to reap', $tester->getDisplay());
     }
 
     public function testAFailureIsReportedAndExitsNonZero(): void
@@ -58,8 +58,8 @@ final class ReapRunsCommandTest extends TestCase
 
         $tester = $this->tester();
 
-        self::assertSame(Command::FAILURE, $tester->execute([]));
-        self::assertStringContainsString('lock wait timeout', $tester->getDisplay());
+        $this->assertSame(Command::FAILURE, $tester->execute([]));
+        $this->assertStringContainsString('lock wait timeout', $tester->getDisplay());
     }
 
     private function command(): ReapRunsCommand

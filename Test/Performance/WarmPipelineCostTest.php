@@ -37,7 +37,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * What warming a catalogue costs before a single page is fetched.
  */
-final class WarmPipelineCostTest extends TestCase
+class WarmPipelineCostTest extends TestCase
 {
     use BudgetAssertions;
 
@@ -68,7 +68,7 @@ final class WarmPipelineCostTest extends TestCase
 
     public function testQueueingIsOneMessagePerBatchRatherThanPerProduct(): void
     {
-        self::assertCostPerBatch(
+        $this->assertCostPerBatch(
             'messages published to warm a catalogue',
             100,
             function (int $products): int {
@@ -86,7 +86,7 @@ final class WarmPipelineCostTest extends TestCase
 
     public function testCollectingTheCatalogueIsOneQuery(): void
     {
-        self::assertConstantCost(
+        $this->assertConstantCost(
             'queries while collecting the products to warm',
             function (int $products): int {
                 $this->runs = new InMemoryWarmRuns();
@@ -107,7 +107,7 @@ final class WarmPipelineCostTest extends TestCase
      */
     public function testConsumingABatchWritesProgressOnce(): void
     {
-        self::assertConstantCost(
+        $this->assertConstantCost(
             'progress writes per consumed batch',
             function (int $products): int {
                 $this->runs = new InMemoryWarmRuns();
@@ -141,8 +141,8 @@ final class WarmPipelineCostTest extends TestCase
             $consumer->process($message);
         }
 
-        self::assertSame(10, count($this->queue), '1,000 products in batches of 100.');
-        self::assertCostAtMost('progress writes for a ten-batch run', 10, $this->progressWrites);
+        $this->assertSame(10, count($this->queue), '1,000 products in batches of 100.');
+        $this->assertCostAtMost('progress writes for a ten-batch run', 10, $this->progressWrites);
     }
 
     /**
@@ -155,9 +155,9 @@ final class WarmPipelineCostTest extends TestCase
 
         $runId = $this->queuer(batchSize: '0')->queue(BatchQueuer::TYPE_SIMPLE);
 
-        self::assertNotNull($runId);
-        self::assertGreaterThan(0, count($this->queue));
-        self::assertLessThanOrEqual(500, count($this->queue));
+        $this->assertNotNull($runId);
+        $this->assertGreaterThan(0, count($this->queue));
+        $this->assertLessThanOrEqual(500, count($this->queue));
     }
 
     private function queuer(string $batchSize = '100'): BatchQueuer

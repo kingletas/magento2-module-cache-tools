@@ -15,9 +15,9 @@ use Commerce\Foundation\Test\Support\ModuleWiringTestCase;
 /**
  * This module's `etc/` against the code it names.
  */
-final class WiringTest extends ModuleWiringTestCase
+class WiringTest extends ModuleWiringTestCase
 {
-    protected static function moduleDir(): string
+    protected function moduleDir(): string
     {
         return dirname(__DIR__, 2);
     }
@@ -25,7 +25,7 @@ final class WiringTest extends ModuleWiringTestCase
     /**
      * @inheritDoc
      */
-    protected static function settingsWithNoDefault(): array
+    protected function settingsWithNoDefault(): array
     {
         return [
             // The Fastly service this install purges, and the extra URLs the

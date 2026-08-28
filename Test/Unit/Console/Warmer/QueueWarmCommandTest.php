@@ -18,7 +18,7 @@ use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
-final class QueueWarmCommandTest extends TestCase
+class QueueWarmCommandTest extends TestCase
 {
     /** @var string[] */
     private array $queued = [];
@@ -48,14 +48,14 @@ final class QueueWarmCommandTest extends TestCase
     {
         $this->tester()->execute([]);
 
-        self::assertSame([BatchQueuer::TYPE_SIMPLE, BatchQueuer::TYPE_CONFIGURABLE], $this->queued);
+        $this->assertSame([BatchQueuer::TYPE_SIMPLE, BatchQueuer::TYPE_CONFIGURABLE], $this->queued);
     }
 
     public function testASingleTypeCanBeQueued(): void
     {
         $this->tester()->execute(['--type' => BatchQueuer::TYPE_CONFIGURABLE]);
 
-        self::assertSame([BatchQueuer::TYPE_CONFIGURABLE], $this->queued);
+        $this->assertSame([BatchQueuer::TYPE_CONFIGURABLE], $this->queued);
     }
 
     /**
@@ -66,9 +66,9 @@ final class QueueWarmCommandTest extends TestCase
     {
         $tester = $this->tester();
 
-        self::assertSame(Command::INVALID, $tester->execute(['--type' => 'bundle']));
-        self::assertStringContainsString('Unknown type "bundle"', $tester->getDisplay());
-        self::assertSame([], $this->queued);
+        $this->assertSame(Command::INVALID, $tester->execute(['--type' => 'bundle']));
+        $this->assertStringContainsString('Unknown type "bundle"', $tester->getDisplay());
+        $this->assertSame([], $this->queued);
     }
 
     /**
@@ -79,7 +79,7 @@ final class QueueWarmCommandTest extends TestCase
     {
         $this->tester()->execute([]);
 
-        self::assertSame(['get', 'set:' . Area::AREA_FRONTEND], $this->areaCalls);
+        $this->assertSame(['get', 'set:' . Area::AREA_FRONTEND], $this->areaCalls);
     }
 
     public function testAnAreaThatIsAlreadySetIsLeftAlone(): void
@@ -88,7 +88,7 @@ final class QueueWarmCommandTest extends TestCase
 
         $this->tester()->execute([]);
 
-        self::assertSame(['get'], $this->areaCalls);
+        $this->assertSame(['get'], $this->areaCalls);
     }
 
     public function testEachQueuedRunIsReportedWithItsId(): void
@@ -96,7 +96,7 @@ final class QueueWarmCommandTest extends TestCase
         $tester = $this->tester();
         $tester->execute(['--type' => BatchQueuer::TYPE_SIMPLE]);
 
-        self::assertStringContainsString('Queued simple warm run #7', $tester->getDisplay());
+        $this->assertStringContainsString('Queued simple warm run #7', $tester->getDisplay());
     }
 
     /**
@@ -108,7 +108,7 @@ final class QueueWarmCommandTest extends TestCase
         $tester = $this->tester();
         $tester->execute([]);
 
-        self::assertStringContainsString('queue:consumers:start', $tester->getDisplay());
+        $this->assertStringContainsString('queue:consumers:start', $tester->getDisplay());
     }
 
     /**
@@ -121,9 +121,9 @@ final class QueueWarmCommandTest extends TestCase
 
         $tester = $this->tester();
 
-        self::assertSame(Command::SUCCESS, $tester->execute([]));
-        self::assertStringContainsString('Skipped simple', $tester->getDisplay());
-        self::assertStringContainsString('Queued configurable', $tester->getDisplay());
+        $this->assertSame(Command::SUCCESS, $tester->execute([]));
+        $this->assertStringContainsString('Skipped simple', $tester->getDisplay());
+        $this->assertStringContainsString('Queued configurable', $tester->getDisplay());
     }
 
     /**
@@ -137,7 +137,7 @@ final class QueueWarmCommandTest extends TestCase
         $tester = $this->tester();
         $tester->execute([]);
 
-        self::assertStringNotContainsString('queue:consumers:start', $tester->getDisplay());
+        $this->assertStringNotContainsString('queue:consumers:start', $tester->getDisplay());
     }
 
     public function testAFailureToQueueIsReportedAndExitsNonZero(): void
@@ -146,8 +146,8 @@ final class QueueWarmCommandTest extends TestCase
 
         $tester = $this->tester();
 
-        self::assertSame(Command::FAILURE, $tester->execute([]));
-        self::assertStringContainsString('the queue is unreachable', $tester->getDisplay());
+        $this->assertSame(Command::FAILURE, $tester->execute([]));
+        $this->assertStringContainsString('the queue is unreachable', $tester->getDisplay());
     }
 
     private function command(): QueueWarmCommand

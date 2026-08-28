@@ -14,7 +14,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-final class ReapStaleWarmRunsTest extends TestCase
+class ReapStaleWarmRunsTest extends TestCase
 {
     private RecordingLogger $logger;
 
@@ -26,7 +26,7 @@ final class ReapStaleWarmRunsTest extends TestCase
     public function testTheScheduledSweepReapsAbandonedRuns(): void
     {
         $reaper = $this->createMock(StaleRunReaper::class);
-        $reaper->expects(self::once())->method('reap')->willReturn(2);
+        $reaper->expects($this->once())->method('reap')->willReturn(2);
 
         (new ReapStaleWarmRuns($reaper, $this->logger))->execute();
     }
@@ -42,8 +42,8 @@ final class ReapStaleWarmRunsTest extends TestCase
 
         (new ReapStaleWarmRuns($reaper, $this->logger))->execute();
 
-        self::assertCount(1, $this->logger->errors);
-        self::assertStringContainsString('reaping stale warm runs', $this->logger->errors[0]);
+        $this->assertCount(1, $this->logger->errors);
+        $this->assertStringContainsString('reaping stale warm runs', $this->logger->errors[0]);
     }
 
     public function testASuccessfulSweepSaysNothing(): void
@@ -53,6 +53,6 @@ final class ReapStaleWarmRunsTest extends TestCase
 
         (new ReapStaleWarmRuns($reaper, $this->logger))->execute();
 
-        self::assertSame([], $this->logger->errors);
+        $this->assertSame([], $this->logger->errors);
     }
 }

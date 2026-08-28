@@ -20,7 +20,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-final class FrontendUrlResolverTest extends TestCase
+class FrontendUrlResolverTest extends TestCase
 {
     /** @var array<int, array<string, mixed>> Lookups the finder was asked for. */
     private array $lookups = [];
@@ -55,7 +55,7 @@ final class FrontendUrlResolverTest extends TestCase
 
     public function testTheStorefrontUrlIsBuiltFromTheRewriteAndTheStoresBaseUrl(): void
     {
-        self::assertSame(
+        $this->assertSame(
             'https://shop.test/scrub-top.html',
             $this->resolver()->resolve($this->product(), 1)
         );
@@ -69,8 +69,8 @@ final class FrontendUrlResolverTest extends TestCase
     {
         $url = $this->resolver()->resolve($this->product(), 0);
 
-        self::assertSame('https://shop.test/scrub-top.html', $url);
-        self::assertStringNotContainsString('admin', $url);
+        $this->assertSame('https://shop.test/scrub-top.html', $url);
+        $this->assertStringNotContainsString('admin', $url);
     }
 
     /**
@@ -81,7 +81,7 @@ final class FrontendUrlResolverTest extends TestCase
     {
         $this->resolver()->resolve($this->product(), 1);
 
-        self::assertSame(
+        $this->assertSame(
             [
                 UrlRewrite::ENTITY_ID => 10,
                 UrlRewrite::ENTITY_TYPE => ProductUrlRewriteGenerator::ENTITY_TYPE,
@@ -100,7 +100,7 @@ final class FrontendUrlResolverTest extends TestCase
     {
         $this->rewrites = ['10:1' => '/scrub-top.html'];
 
-        self::assertSame('https://shop.test/scrub-top.html', $this->resolver()->resolve($this->product(), 1));
+        $this->assertSame('https://shop.test/scrub-top.html', $this->resolver()->resolve($this->product(), 1));
     }
 
     /**
@@ -111,15 +111,15 @@ final class FrontendUrlResolverTest extends TestCase
     {
         $this->rewrites = [];
 
-        self::assertSame('', $this->resolver()->resolve($this->product(), 1));
-        self::assertCount(1, $this->logger->infos);
+        $this->assertSame('', $this->resolver()->resolve($this->product(), 1));
+        $this->assertCount(1, $this->logger->infos);
     }
 
     public function testAStoreThatDoesNotResolveGivesNoUrl(): void
     {
         $this->storeFailure = new NoSuchEntityException(__('No such store.'));
 
-        self::assertSame('', $this->resolver()->resolve($this->product(), 99));
+        $this->assertSame('', $this->resolver()->resolve($this->product(), 99));
     }
 
     /**
@@ -129,7 +129,7 @@ final class FrontendUrlResolverTest extends TestCase
     {
         $this->stores = [0 => ['active' => true, 'baseUrl' => 'https://admin.test/']];
 
-        self::assertSame('', $this->resolver()->resolve($this->product(), 0));
+        $this->assertSame('', $this->resolver()->resolve($this->product(), 0));
     }
 
     /**
@@ -140,8 +140,8 @@ final class FrontendUrlResolverTest extends TestCase
     {
         $this->finderFailure = new RuntimeException('rewrite table is missing');
 
-        self::assertSame('', $this->resolver()->resolve($this->product(), 1));
-        self::assertCount(1, $this->logger->warnings);
+        $this->assertSame('', $this->resolver()->resolve($this->product(), 1));
+        $this->assertCount(1, $this->logger->warnings);
     }
 
     /**
@@ -153,7 +153,7 @@ final class FrontendUrlResolverTest extends TestCase
         $this->stores[2] = ['active' => true, 'baseUrl' => 'https://de.shop.test/'];
         $this->rewrites['10:2'] = 'kittel.html';
 
-        self::assertSame(
+        $this->assertSame(
             ['https://shop.test/scrub-top.html', 'https://de.shop.test/kittel.html'],
             $this->resolver()->resolveForAllStores($this->product())
         );
@@ -168,7 +168,7 @@ final class FrontendUrlResolverTest extends TestCase
         $this->stores[2] = ['active' => false, 'baseUrl' => 'https://de.shop.test/'];
         $this->rewrites['10:2'] = 'kittel.html';
 
-        self::assertSame(
+        $this->assertSame(
             ['https://shop.test/scrub-top.html'],
             $this->resolver()->resolveForAllStores($this->product())
         );
@@ -183,7 +183,7 @@ final class FrontendUrlResolverTest extends TestCase
         $this->stores[2] = ['active' => true, 'baseUrl' => 'https://shop.test/'];
         $this->rewrites['10:2'] = 'scrub-top.html';
 
-        self::assertSame(
+        $this->assertSame(
             ['https://shop.test/scrub-top.html'],
             $this->resolver()->resolveForAllStores($this->product())
         );
@@ -193,7 +193,7 @@ final class FrontendUrlResolverTest extends TestCase
     {
         $this->stores[2] = ['active' => true, 'baseUrl' => 'https://de.shop.test/'];
 
-        self::assertSame(
+        $this->assertSame(
             ['https://shop.test/scrub-top.html'],
             $this->resolver()->resolveForAllStores($this->product())
         );

@@ -15,7 +15,7 @@ use Magento\Framework\Exception\LocalizedException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-final class RewarmConsumerTest extends TestCase
+class RewarmConsumerTest extends TestCase
 {
     /** @var string[] */
     private array $warmed = [];
@@ -36,7 +36,7 @@ final class RewarmConsumerTest extends TestCase
     {
         $this->consumer()->process('https://shop.test/scrub-top.html');
 
-        self::assertSame(['https://shop.test/scrub-top.html'], $this->warmed);
+        $this->assertSame(['https://shop.test/scrub-top.html'], $this->warmed);
     }
 
     /**
@@ -46,7 +46,7 @@ final class RewarmConsumerTest extends TestCase
     {
         $this->consumer()->process('https://shop.test/a.html');
 
-        self::assertSame(['get', 'set:' . Area::AREA_FRONTEND], $this->areaCalls);
+        $this->assertSame(['get', 'set:' . Area::AREA_FRONTEND], $this->areaCalls);
     }
 
     /**
@@ -59,7 +59,7 @@ final class RewarmConsumerTest extends TestCase
 
         $this->consumer()->process('https://shop.test/a.html');
 
-        self::assertSame(['get'], $this->areaCalls);
+        $this->assertSame(['get'], $this->areaCalls);
     }
 
     private function consumer(): RewarmConsumer

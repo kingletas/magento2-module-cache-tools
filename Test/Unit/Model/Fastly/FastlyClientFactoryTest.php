@@ -16,7 +16,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\ObjectManagerInterface;
 use PHPUnit\Framework\TestCase;
 
-final class FastlyClientFactoryTest extends TestCase
+class FastlyClientFactoryTest extends TestCase
 {
     /** @var Configuration[] */
     private array $configurations = [];
@@ -37,8 +37,8 @@ final class FastlyClientFactoryTest extends TestCase
     {
         $this->factory()->createPurgeApi();
 
-        self::assertCount(1, $this->configurations);
-        self::assertSame('tok_fastly', $this->configurations[0]->getApiToken());
+        $this->assertCount(1, $this->configurations);
+        $this->assertSame('tok_fastly', $this->configurations[0]->getApiToken());
     }
 
     /**
@@ -53,8 +53,8 @@ final class FastlyClientFactoryTest extends TestCase
         $factory->createPurgeApi();
         $factory->createServiceApi();
 
-        self::assertNotSame($shared, $this->configurations[0]);
-        self::assertSame($sharedTokenBefore, Configuration::getDefaultConfiguration()->getApiToken());
+        $this->assertNotSame($shared, $this->configurations[0]);
+        $this->assertSame($sharedTokenBefore, Configuration::getDefaultConfiguration()->getApiToken());
     }
 
     /**
@@ -67,8 +67,8 @@ final class FastlyClientFactoryTest extends TestCase
         $factory->createPurgeApi();
         $factory->createServiceApi();
 
-        self::assertCount(2, $this->configurations);
-        self::assertNotSame($this->configurations[0], $this->configurations[1]);
+        $this->assertCount(2, $this->configurations);
+        $this->assertNotSame($this->configurations[0], $this->configurations[1]);
     }
 
     /**
@@ -84,16 +84,16 @@ final class FastlyClientFactoryTest extends TestCase
         $factory->createServiceApi();
         $factory->createServiceApi();
 
-        self::assertSame(1, $this->purgeApisBuilt);
-        self::assertSame(1, $this->serviceApisBuilt);
+        $this->assertSame(1, $this->purgeApisBuilt);
+        $this->assertSame(1, $this->serviceApisBuilt);
     }
 
     public function testTheSameClientInstanceComesBackOnEveryCall(): void
     {
         $factory = $this->factory();
 
-        self::assertSame($factory->createPurgeApi(), $factory->createPurgeApi());
-        self::assertSame($factory->createServiceApi(), $factory->createServiceApi());
+        $this->assertSame($factory->createPurgeApi(), $factory->createPurgeApi());
+        $this->assertSame($factory->createServiceApi(), $factory->createServiceApi());
     }
 
     /**
@@ -126,8 +126,8 @@ final class FastlyClientFactoryTest extends TestCase
     {
         $factory = $this->factory();
 
-        self::assertInstanceOf(PurgeApi::class, $factory->createPurgeApi());
-        self::assertInstanceOf(ServiceApi::class, $factory->createServiceApi());
+        $this->assertInstanceOf(PurgeApi::class, $factory->createPurgeApi());
+        $this->assertInstanceOf(ServiceApi::class, $factory->createServiceApi());
     }
 
     private function factory(
@@ -142,7 +142,7 @@ final class FastlyClientFactoryTest extends TestCase
             function (string $class, array $arguments = []): object {
                 // The SDK takes its configuration by name, so a positional call
                 // would misplace it.
-                self::assertArrayHasKey('config', $arguments);
+                $this->assertArrayHasKey('config', $arguments);
                 $this->configurations[] = $arguments['config'];
 
                 if ($class === PurgeApi::class) {

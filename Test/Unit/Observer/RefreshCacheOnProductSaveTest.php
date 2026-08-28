@@ -17,7 +17,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-final class RefreshCacheOnProductSaveTest extends TestCase
+class RefreshCacheOnProductSaveTest extends TestCase
 {
     /** @var string[] */
     private array $refreshed = [];
@@ -36,7 +36,7 @@ final class RefreshCacheOnProductSaveTest extends TestCase
     {
         $this->observer()->execute($this->event($this->product('SKU-1')));
 
-        self::assertSame(['SKU-1'], $this->refreshed);
+        $this->assertSame(['SKU-1'], $this->refreshed);
     }
 
     /**
@@ -50,8 +50,8 @@ final class RefreshCacheOnProductSaveTest extends TestCase
         $observer->execute(new Observer(['event' => new Event([])]));
         $observer->execute(new Observer(['event' => new Event(['product' => 'SKU-1'])]));
 
-        self::assertSame([], $this->refreshed);
-        self::assertSame([], $this->logger->errors);
+        $this->assertSame([], $this->refreshed);
+        $this->assertSame([], $this->logger->errors);
     }
 
     /**
@@ -64,8 +64,8 @@ final class RefreshCacheOnProductSaveTest extends TestCase
 
         $this->observer()->execute($this->event($this->product('SKU-1')));
 
-        self::assertCount(1, $this->logger->errors);
-        self::assertStringContainsString('SKU-1', $this->logger->errors[0]);
+        $this->assertCount(1, $this->logger->errors);
+        $this->assertStringContainsString('SKU-1', $this->logger->errors[0]);
     }
 
     private function event(ProductInterface $product): Observer

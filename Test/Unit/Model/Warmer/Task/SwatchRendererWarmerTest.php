@@ -20,7 +20,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-final class SwatchRendererWarmerTest extends TestCase
+class SwatchRendererWarmerTest extends TestCase
 {
     /** @var string[] */
     private array $createdBlocks = [];
@@ -41,7 +41,7 @@ final class SwatchRendererWarmerTest extends TestCase
 
     public function testItIsTheDefaultSwatchWarmer(): void
     {
-        self::assertInstanceOf(SwatchCacheWarmerInterface::class, $this->warmer());
+        $this->assertInstanceOf(SwatchCacheWarmerInterface::class, $this->warmer());
     }
 
     /**
@@ -52,16 +52,16 @@ final class SwatchRendererWarmerTest extends TestCase
     {
         $product = $this->product();
 
-        self::assertTrue($this->warmer()->warm($product));
-        self::assertSame(1, $this->renders);
-        self::assertSame($product, $this->renderedFor);
+        $this->assertTrue($this->warmer()->warm($product));
+        $this->assertSame(1, $this->renders);
+        $this->assertSame($product, $this->renderedFor);
     }
 
     public function testTheConfiguredBlockIsTheOneBuilt(): void
     {
         $this->warmer()->warm($this->product());
 
-        self::assertSame([SwatchRendererWarmer::DEFAULT_BLOCK], $this->createdBlocks);
+        $this->assertSame([SwatchRendererWarmer::DEFAULT_BLOCK], $this->createdBlocks);
     }
 
     /**
@@ -72,7 +72,7 @@ final class SwatchRendererWarmerTest extends TestCase
     {
         $this->warmer(Template::class)->warm($this->product());
 
-        self::assertSame([Template::class], $this->createdBlocks);
+        $this->assertSame([Template::class], $this->createdBlocks);
     }
 
     /**
@@ -81,8 +81,8 @@ final class SwatchRendererWarmerTest extends TestCase
      */
     public function testAnUninstalledRendererIsSkippedRatherThanFatal(): void
     {
-        self::assertFalse($this->warmer('Acme\\Uninstalled\\Swatches\\Renderer')->warm($this->product()));
-        self::assertSame([], $this->createdBlocks);
+        $this->assertFalse($this->warmer('Acme\\Uninstalled\\Swatches\\Renderer')->warm($this->product()));
+        $this->assertSame([], $this->createdBlocks);
     }
 
     /**
@@ -91,8 +91,8 @@ final class SwatchRendererWarmerTest extends TestCase
      */
     public function testABlockThatCannotRenderSwatchesIsSkipped(): void
     {
-        self::assertFalse($this->warmer(Template::class)->warm($this->product()));
-        self::assertSame(0, $this->renders);
+        $this->assertFalse($this->warmer(Template::class)->warm($this->product()));
+        $this->assertSame(0, $this->renders);
     }
 
     /**
@@ -103,14 +103,14 @@ final class SwatchRendererWarmerTest extends TestCase
     {
         $this->renderFailure = new RuntimeException('missing attribute option');
 
-        self::assertFalse($this->warmer()->warm($this->product()));
-        self::assertCount(1, $this->logger->warnings);
-        self::assertStringContainsString('SKU-1', $this->logger->warnings[0]);
+        $this->assertFalse($this->warmer()->warm($this->product()));
+        $this->assertCount(1, $this->logger->warnings);
+        $this->assertStringContainsString('SKU-1', $this->logger->warnings[0]);
     }
 
     public function testTheDefaultBlockIsMagentosOwnSwatchRenderer(): void
     {
-        self::assertSame(SwatchRenderer::class, SwatchRendererWarmer::DEFAULT_BLOCK);
+        $this->assertSame(SwatchRenderer::class, SwatchRendererWarmer::DEFAULT_BLOCK);
     }
 
     private function warmer(string $blockClass = SwatchRendererWarmer::DEFAULT_BLOCK): SwatchRendererWarmer

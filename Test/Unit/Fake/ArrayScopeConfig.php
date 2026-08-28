@@ -12,7 +12,7 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 /**
  * A scope config backed by a plain array.
  */
-final class ArrayScopeConfig implements ScopeConfigInterface
+class ArrayScopeConfig implements ScopeConfigInterface
 {
     /**
      * @param array<string, mixed> $values

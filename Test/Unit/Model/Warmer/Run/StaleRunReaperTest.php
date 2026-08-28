@@ -15,7 +15,7 @@ use Magento\Framework\Stdlib\DateTime\DateTime;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-final class StaleRunReaperTest extends TestCase
+class StaleRunReaperTest extends TestCase
 {
     /** @var array<int, array{noProgressSince: string, finishedAt: string}> */
     private array $sweeps = [];
@@ -42,8 +42,8 @@ final class StaleRunReaperTest extends TestCase
      */
     public function testAbandonedRunsAreClosed(): void
     {
-        self::assertSame(2, $this->reaper()->reap());
-        self::assertCount(1, $this->sweeps);
+        $this->assertSame(2, $this->reaper()->reap());
+        $this->assertCount(1, $this->sweeps);
     }
 
     /**
@@ -56,7 +56,7 @@ final class StaleRunReaperTest extends TestCase
 
         $this->reaper()->reap();
 
-        self::assertEqualsWithDelta($before - 6 * 3600, $this->cutoffTimestamps[0], 5);
+        $this->assertEqualsWithDelta($before - 6 * 3600, $this->cutoffTimestamps[0], 5);
     }
 
     public function testTheThresholdIsConfigurable(): void
@@ -66,7 +66,7 @@ final class StaleRunReaperTest extends TestCase
 
         $this->reaper()->reap();
 
-        self::assertEqualsWithDelta($before - 24 * 3600, $this->cutoffTimestamps[0], 5);
+        $this->assertEqualsWithDelta($before - 24 * 3600, $this->cutoffTimestamps[0], 5);
     }
 
     /**
@@ -77,9 +77,9 @@ final class StaleRunReaperTest extends TestCase
     {
         $this->reaper()->reap();
 
-        self::assertCount(1, $this->logger->warnings);
-        self::assertStringContainsString('2 warm run(s)', $this->logger->warnings[0]);
-        self::assertStringContainsString('6 hour threshold', $this->logger->warnings[0]);
+        $this->assertCount(1, $this->logger->warnings);
+        $this->assertStringContainsString('2 warm run(s)', $this->logger->warnings[0]);
+        $this->assertStringContainsString('6 hour threshold', $this->logger->warnings[0]);
     }
 
     /**
@@ -90,8 +90,8 @@ final class StaleRunReaperTest extends TestCase
     {
         $this->reaped = 0;
 
-        self::assertSame(0, $this->reaper()->reap());
-        self::assertSame([], $this->logger->warnings);
+        $this->assertSame(0, $this->reaper()->reap());
+        $this->assertSame([], $this->logger->warnings);
     }
 
     private function reaper(): StaleRunReaper

@@ -20,7 +20,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-final class PurgerTest extends TestCase
+class PurgerTest extends TestCase
 {
     /** @var array<int, array{call: string, options: array<string, mixed>}> */
     private array $calls = [];
@@ -49,9 +49,9 @@ final class PurgerTest extends TestCase
     {
         $result = $this->purger()->purgeUrl('https://shop.test/scrub-top.html');
 
-        self::assertTrue($result->isSuccess);
-        self::assertSame('purgeSingleUrl', $this->calls[0]['call']);
-        self::assertSame('https://shop.test/scrub-top.html', $this->calls[0]['options']['cached_url']);
+        $this->assertTrue($result->isSuccess);
+        $this->assertSame('purgeSingleUrl', $this->calls[0]['call']);
+        $this->assertSame('https://shop.test/scrub-top.html', $this->calls[0]['options']['cached_url']);
     }
 
     /**
@@ -62,14 +62,14 @@ final class PurgerTest extends TestCase
     {
         $this->purger()->purgeUrl('https://shop.test/a.html');
 
-        self::assertArrayHasKey('fastly_soft_purge', $this->calls[0]['options']);
+        $this->assertArrayHasKey('fastly_soft_purge', $this->calls[0]['options']);
     }
 
     public function testAHardPurgeCanBeAskedForExplicitly(): void
     {
         $this->purger()->purgeUrl('https://shop.test/a.html', soft: false);
 
-        self::assertArrayNotHasKey('fastly_soft_purge', $this->calls[0]['options']);
+        $this->assertArrayNotHasKey('fastly_soft_purge', $this->calls[0]['options']);
     }
 
     public function testTheConfiguredDefaultIsUsedWhenTheCallerDoesNotSay(): void
@@ -78,7 +78,7 @@ final class PurgerTest extends TestCase
 
         $this->purger()->purgeUrl('https://shop.test/a.html');
 
-        self::assertArrayNotHasKey('fastly_soft_purge', $this->calls[0]['options']);
+        $this->assertArrayNotHasKey('fastly_soft_purge', $this->calls[0]['options']);
     }
 
     /**
@@ -89,7 +89,7 @@ final class PurgerTest extends TestCase
     {
         $this->purger()->purgeUrl('https://shop.test/scrub-top.html');
 
-        self::assertSame(['https://shop.test/scrub-top.html'], $this->rewarmed);
+        $this->assertSame(['https://shop.test/scrub-top.html'], $this->rewarmed);
     }
 
     public function testAFailedPurgeQueuesNoRewarm(): void
@@ -98,7 +98,7 @@ final class PurgerTest extends TestCase
 
         $this->purger()->purgeUrl('https://shop.test/scrub-top.html');
 
-        self::assertSame([], $this->rewarmed);
+        $this->assertSame([], $this->rewarmed);
     }
 
     /**
@@ -109,8 +109,8 @@ final class PurgerTest extends TestCase
     {
         $result = $this->purger()->purgeUrl('not a url');
 
-        self::assertFalse($result->isSuccess);
-        self::assertSame([], $this->calls);
+        $this->assertFalse($result->isSuccess);
+        $this->assertSame([], $this->calls);
     }
 
     /**
@@ -122,9 +122,9 @@ final class PurgerTest extends TestCase
 
         $result = $this->purger()->purgeUrl('https://production.test/a.html');
 
-        self::assertFalse($result->isSuccess);
-        self::assertSame([], $this->calls);
-        self::assertStringContainsString('not purgeable', (string) $result->message);
+        $this->assertFalse($result->isSuccess);
+        $this->assertSame([], $this->calls);
+        $this->assertStringContainsString('not purgeable', (string) $result->message);
     }
 
     public function testNothingIsPurgedWhileFastlyIsDisabled(): void
@@ -132,28 +132,28 @@ final class PurgerTest extends TestCase
         $this->enabled = false;
         $purger = $this->purger();
 
-        self::assertFalse($purger->purgeUrl('https://shop.test/a.html')->isSuccess);
-        self::assertFalse($purger->purgeKeys(['cat_p_10'])->isSuccess);
-        self::assertFalse($purger->purgeAll(true)->isSuccess);
-        self::assertSame([], $this->calls);
+        $this->assertFalse($purger->purgeUrl('https://shop.test/a.html')->isSuccess);
+        $this->assertFalse($purger->purgeKeys(['cat_p_10'])->isSuccess);
+        $this->assertFalse($purger->purgeAll(true)->isSuccess);
+        $this->assertSame([], $this->calls);
     }
 
     public function testEachUrlInABatchGetsItsOwnResult(): void
     {
         $results = $this->purger()->purgeUrls(['https://shop.test/a.html', 'not a url']);
 
-        self::assertCount(2, $results);
-        self::assertTrue($results[0]->isSuccess);
-        self::assertFalse($results[1]->isSuccess);
+        $this->assertCount(2, $results);
+        $this->assertTrue($results[0]->isSuccess);
+        $this->assertFalse($results[1]->isSuccess);
     }
 
     public function testASingleKeyIsPurgedThroughTheBulkEndpoint(): void
     {
         $result = $this->purger()->purgeKey('cat_p_10');
 
-        self::assertTrue($result->isSuccess);
-        self::assertSame('bulkPurgeTag', $this->calls[0]['call']);
-        self::assertSame('cat_p_10', $this->calls[0]['options']['surrogate_key']);
+        $this->assertTrue($result->isSuccess);
+        $this->assertSame('bulkPurgeTag', $this->calls[0]['call']);
+        $this->assertSame('cat_p_10', $this->calls[0]['options']['surrogate_key']);
     }
 
     /**
@@ -166,11 +166,11 @@ final class PurgerTest extends TestCase
 
         $result = $this->purger()->purgeKeys($keys);
 
-        self::assertTrue($result->isSuccess);
-        self::assertCount(3, $this->calls);
+        $this->assertTrue($result->isSuccess);
+        $this->assertCount(3, $this->calls);
 
         foreach ($this->calls as $call) {
-            self::assertLessThanOrEqual(256, count(explode(' ', $call['options']['surrogate_key'])));
+            $this->assertLessThanOrEqual(256, count(explode(' ', $call['options']['surrogate_key'])));
         }
     }
 
@@ -178,22 +178,22 @@ final class PurgerTest extends TestCase
     {
         $this->purger()->purgeKeys(['cat_p_10', ' cat_p_10 ', '', 'cat_p_11']);
 
-        self::assertSame('cat_p_10 cat_p_11', $this->calls[0]['options']['surrogate_key']);
+        $this->assertSame('cat_p_10 cat_p_11', $this->calls[0]['options']['surrogate_key']);
     }
 
     public function testPurgingNoKeysIsRefusedWithoutAnApiCall(): void
     {
         $result = $this->purger()->purgeKeys(['', '  ']);
 
-        self::assertFalse($result->isSuccess);
-        self::assertSame([], $this->calls);
+        $this->assertFalse($result->isSuccess);
+        $this->assertSame([], $this->calls);
     }
 
     public function testTheKeyPurgeIsScopedToTheResolvedService(): void
     {
         $this->purger()->purgeKeys(['cat_p_10']);
 
-        self::assertSame('svc_123', $this->calls[0]['options']['service_id']);
+        $this->assertSame('svc_123', $this->calls[0]['options']['service_id']);
     }
 
     /**
@@ -204,18 +204,18 @@ final class PurgerTest extends TestCase
     {
         $result = $this->purger()->purgeAll();
 
-        self::assertFalse($result->isSuccess);
-        self::assertSame([], $this->calls);
-        self::assertCount(1, $this->logger->warnings);
+        $this->assertFalse($result->isSuccess);
+        $this->assertSame([], $this->calls);
+        $this->assertCount(1, $this->logger->warnings);
     }
 
     public function testAConfirmedPurgeAllRunsAndIsWarnedAbout(): void
     {
         $result = $this->purger()->purgeAll(true);
 
-        self::assertTrue($result->isSuccess);
-        self::assertSame('purgeAll', $this->calls[0]['call']);
-        self::assertCount(1, $this->logger->warnings);
+        $this->assertTrue($result->isSuccess);
+        $this->assertSame('purgeAll', $this->calls[0]['call']);
+        $this->assertCount(1, $this->logger->warnings);
     }
 
     /**
@@ -226,15 +226,15 @@ final class PurgerTest extends TestCase
     {
         $this->purger()->purgeAll(true);
 
-        self::assertArrayNotHasKey('fastly_soft_purge', $this->calls[0]['options']);
+        $this->assertArrayNotHasKey('fastly_soft_purge', $this->calls[0]['options']);
     }
 
     public function testAGuardedPurgeAllIsRefused(): void
     {
         $this->blockReason = __('This service is not purgeable from this environment.');
 
-        self::assertFalse($this->purger()->purgeAll(true)->isSuccess);
-        self::assertSame([], $this->calls);
+        $this->assertFalse($this->purger()->purgeAll(true)->isSuccess);
+        $this->assertSame([], $this->calls);
     }
 
     /**
@@ -247,10 +247,10 @@ final class PurgerTest extends TestCase
 
         $result = $this->purger()->purgeUrl('https://shop.test/a.html');
 
-        self::assertFalse($result->isSuccess);
-        self::assertStringNotContainsString('tok_secret', (string) $result->message);
-        self::assertStringContainsString('see the log', (string) $result->message);
-        self::assertCount(1, $this->logger->errors);
+        $this->assertFalse($result->isSuccess);
+        $this->assertStringNotContainsString('tok_secret', (string) $result->message);
+        $this->assertStringContainsString('see the log', (string) $result->message);
+        $this->assertCount(1, $this->logger->errors);
     }
 
     private function purger(): Purger

@@ -15,7 +15,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-final class UrlWarmerTest extends TestCase
+class UrlWarmerTest extends TestCase
 {
     /** @var string[] */
     private array $fetched = [];
@@ -40,8 +40,8 @@ final class UrlWarmerTest extends TestCase
 
     public function testAUrlIsFetchedSoTheEdgeCachesIt(): void
     {
-        self::assertTrue($this->warmer()->warm('https://shop.test/scrub-top.html'));
-        self::assertSame(['https://shop.test/scrub-top.html'], $this->fetched);
+        $this->assertTrue($this->warmer()->warm('https://shop.test/scrub-top.html'));
+        $this->assertSame(['https://shop.test/scrub-top.html'], $this->fetched);
     }
 
     /**
@@ -52,7 +52,7 @@ final class UrlWarmerTest extends TestCase
     {
         $this->warmer()->warm('https://shop.test/a.html');
 
-        self::assertSame('no-cache', $this->headers['Cache-Control']);
+        $this->assertSame('no-cache', $this->headers['Cache-Control']);
     }
 
     /**
@@ -63,15 +63,15 @@ final class UrlWarmerTest extends TestCase
     {
         $this->warmer()->warm('https://shop.test/a.html');
 
-        self::assertStringContainsString('cache warmer', $this->headers['User-Agent']);
+        $this->assertStringContainsString('cache warmer', $this->headers['User-Agent']);
     }
 
     public function testTheAgentAndTimeoutAreConfigurable(): void
     {
         $this->warmer(timeout: 5, userAgent: 'Acme-Warmer/2.0')->warm('https://shop.test/a.html');
 
-        self::assertSame(5, $this->timeout);
-        self::assertSame('Acme-Warmer/2.0', $this->headers['User-Agent']);
+        $this->assertSame(5, $this->timeout);
+        $this->assertSame('Acme-Warmer/2.0', $this->headers['User-Agent']);
     }
 
     /**
@@ -81,8 +81,8 @@ final class UrlWarmerTest extends TestCase
     {
         $this->warmer()->warm('https://shop.test/a.html');
 
-        self::assertNotNull($this->timeout);
-        self::assertGreaterThan(0, $this->timeout);
+        $this->assertNotNull($this->timeout);
+        $this->assertGreaterThan(0, $this->timeout);
     }
 
     /**
@@ -93,8 +93,8 @@ final class UrlWarmerTest extends TestCase
     {
         $this->status = 301;
 
-        self::assertTrue($this->warmer()->warm('https://shop.test/a.html'));
-        self::assertSame([], $this->logger->warnings);
+        $this->assertTrue($this->warmer()->warm('https://shop.test/a.html'));
+        $this->assertSame([], $this->logger->warnings);
     }
 
     /**
@@ -104,9 +104,9 @@ final class UrlWarmerTest extends TestCase
     {
         $this->status = 503;
 
-        self::assertFalse($this->warmer()->warm('https://shop.test/a.html'));
-        self::assertCount(1, $this->logger->warnings);
-        self::assertStringContainsString('503', $this->logger->warnings[0]);
+        $this->assertFalse($this->warmer()->warm('https://shop.test/a.html'));
+        $this->assertCount(1, $this->logger->warnings);
+        $this->assertStringContainsString('503', $this->logger->warnings[0]);
     }
 
     /**
@@ -115,9 +115,9 @@ final class UrlWarmerTest extends TestCase
      */
     public function testAMalformedUrlIsRefusedWithoutAFetch(): void
     {
-        self::assertFalse($this->warmer()->warm('not a url'));
-        self::assertSame([], $this->fetched);
-        self::assertCount(1, $this->logger->warnings);
+        $this->assertFalse($this->warmer()->warm('not a url'));
+        $this->assertSame([], $this->fetched);
+        $this->assertCount(1, $this->logger->warnings);
     }
 
     /**
@@ -128,9 +128,9 @@ final class UrlWarmerTest extends TestCase
     {
         $this->fetchFailure = new RuntimeException('Connection timed out');
 
-        self::assertFalse($this->warmer()->warm('https://shop.test/a.html'));
-        self::assertCount(1, $this->logger->warnings);
-        self::assertSame([], $this->logger->errors);
+        $this->assertFalse($this->warmer()->warm('https://shop.test/a.html'));
+        $this->assertCount(1, $this->logger->warnings);
+        $this->assertSame([], $this->logger->errors);
     }
 
     private function warmer(int $timeout = 30, string $userAgent = 'Commerce-CacheTools/1.0 (cache warmer)'): UrlWarmer

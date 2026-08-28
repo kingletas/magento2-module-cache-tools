@@ -13,7 +13,7 @@ use Stringable;
 /**
  * A logger that keeps what it was told, by level.
  */
-final class RecordingLogger extends AbstractLogger
+class RecordingLogger extends AbstractLogger
 {
     /** @var array<int, string> */
     public array $warnings = [];

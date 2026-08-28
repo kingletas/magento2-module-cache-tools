@@ -13,7 +13,7 @@ use Magento\Framework\Serialize\Serializer\Json;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-final class PublisherTest extends TestCase
+class PublisherTest extends TestCase
 {
     /** @var array<int, array{topic: string, payload: array<string, mixed>}> */
     private array $published = [];
@@ -28,9 +28,9 @@ final class PublisherTest extends TestCase
         $this->publisher()->publishBatch(7, 'product', [10, 11]);
 
         $payload = $this->published[0]['payload'];
-        self::assertSame(7, $payload['run_id']);
-        self::assertSame('product', $payload['type']);
-        self::assertSame([10, 11], $payload['product_ids']);
+        $this->assertSame(7, $payload['run_id']);
+        $this->assertSame('product', $payload['type']);
+        $this->assertSame([10, 11], $payload['product_ids']);
     }
 
     /**
@@ -41,7 +41,7 @@ final class PublisherTest extends TestCase
     {
         $this->publisher()->publishBatch(7, 'product', ['10', '11']);
 
-        self::assertSame([10, 11], $this->published[0]['payload']['product_ids']);
+        $this->assertSame([10, 11], $this->published[0]['payload']['product_ids']);
     }
 
     /**
@@ -51,17 +51,17 @@ final class PublisherTest extends TestCase
     {
         $this->publisher()->publishBatch(7, 'product', [2 => 10, 5 => 11]);
 
-        self::assertSame([10, 11], $this->published[0]['payload']['product_ids']);
+        $this->assertSame([10, 11], $this->published[0]['payload']['product_ids']);
     }
 
     public function testTheDefaultTopicIsUsedUnlessOneIsConfigured(): void
     {
         $this->publisher()->publishBatch(7, 'product', [10]);
-        self::assertSame(Publisher::DEFAULT_TOPIC, $this->published[0]['topic']);
+        $this->assertSame(Publisher::DEFAULT_TOPIC, $this->published[0]['topic']);
 
         $this->published = [];
         $this->publisher('acme.cachetools.warm')->publishBatch(7, 'product', [10]);
-        self::assertSame('acme.cachetools.warm', $this->published[0]['topic']);
+        $this->assertSame('acme.cachetools.warm', $this->published[0]['topic']);
     }
 
     /**
@@ -72,8 +72,8 @@ final class PublisherTest extends TestCase
     {
         $this->publisher()->publishBatch(7, 'product', []);
 
-        self::assertCount(1, $this->published);
-        self::assertSame([], $this->published[0]['payload']['product_ids']);
+        $this->assertCount(1, $this->published);
+        $this->assertSame([], $this->published[0]['payload']['product_ids']);
     }
 
     private function publisher(string $topic = Publisher::DEFAULT_TOPIC): Publisher

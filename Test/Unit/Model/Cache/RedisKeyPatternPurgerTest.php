@@ -19,7 +19,7 @@ use ReflectionMethod;
  * Everything here stops short of an actual Redis connection: connecting is the
  * integration suite's job.
  */
-final class RedisKeyPatternPurgerTest extends TestCase
+class RedisKeyPatternPurgerTest extends TestCase
 {
     /** @var array<string, mixed>|null */
     private ?array $connectionOptions = [
@@ -42,7 +42,7 @@ final class RedisKeyPatternPurgerTest extends TestCase
 
     public function testItSatisfiesThePurgerContract(): void
     {
-        self::assertInstanceOf(KeyPatternPurgerInterface::class, $this->purger());
+        $this->assertInstanceOf(KeyPatternPurgerInterface::class, $this->purger());
     }
 
     /**
@@ -52,9 +52,9 @@ final class RedisKeyPatternPurgerTest extends TestCase
     {
         $this->connectionOptions = null;
 
-        self::assertFalse($this->purger()->isSupported());
-        self::assertCount(1, $this->logger->errors);
-        self::assertStringContainsString('key-pattern purging is unavailable', $this->logger->errors[0]);
+        $this->assertFalse($this->purger()->isSupported());
+        $this->assertCount(1, $this->logger->errors);
+        $this->assertStringContainsString('key-pattern purging is unavailable', $this->logger->errors[0]);
     }
 
     /**
@@ -73,8 +73,8 @@ final class RedisKeyPatternPurgerTest extends TestCase
             $this->connectionOptions = $options;
             $this->logger = new RecordingLogger();
 
-            self::assertFalse($this->purger()->isSupported());
-            self::assertCount(1, $this->logger->errors);
+            $this->assertFalse($this->purger()->isSupported());
+            $this->assertCount(1, $this->logger->errors);
         }
     }
 
@@ -88,8 +88,8 @@ final class RedisKeyPatternPurgerTest extends TestCase
 
         $this->purger('cache/frontend/page_cache/backend_options')->isSupported();
 
-        self::assertSame(['cache/frontend/page_cache/backend_options'], $this->configLookups);
-        self::assertStringContainsString('cache/frontend/page_cache', $this->logger->errors[0]);
+        $this->assertSame(['cache/frontend/page_cache/backend_options'], $this->configLookups);
+        $this->assertStringContainsString('cache/frontend/page_cache', $this->logger->errors[0]);
     }
 
     /**
@@ -105,14 +105,14 @@ final class RedisKeyPatternPurgerTest extends TestCase
         $purger->isSupported();
         $purger->purgeBySkus(['SKU-1']);
 
-        self::assertCount(1, $this->logger->errors);
+        $this->assertCount(1, $this->logger->errors);
     }
 
     public function testNothingIsPurgedWithoutAUsableConnection(): void
     {
         $this->connectionOptions = null;
 
-        self::assertSame(0, $this->purger()->purgeBySkus(['SKU-1']));
+        $this->assertSame(0, $this->purger()->purgeBySkus(['SKU-1']));
     }
 
     /**
@@ -121,9 +121,9 @@ final class RedisKeyPatternPurgerTest extends TestCase
      */
     public function testAnEmptyBatchIsAnsweredWithoutTouchingTheConfiguration(): void
     {
-        self::assertSame(0, $this->purger()->purgeBySkus([]));
-        self::assertSame(0, $this->purger()->purgeBySkus(['', '   ']));
-        self::assertSame([], $this->configLookups);
+        $this->assertSame(0, $this->purger()->purgeBySkus([]));
+        $this->assertSame(0, $this->purger()->purgeBySkus(['', '   ']));
+        $this->assertSame([], $this->configLookups);
     }
 
     /**
@@ -132,12 +132,12 @@ final class RedisKeyPatternPurgerTest extends TestCase
      */
     public function testSkusAreUpperCasedToMatchMagentosCacheIds(): void
     {
-        self::assertSame(['SKU-1'], $this->normalise([' sku-1 ']));
+        $this->assertSame(['SKU-1'], $this->normalise([' sku-1 ']));
     }
 
     public function testDuplicateAndBlankSkusAreDropped(): void
     {
-        self::assertSame(['SKU-1', 'SKU-2'], $this->normalise(['SKU-1', 'sku-1', '', '  ', 'SKU-2']));
+        $this->assertSame(['SKU-1', 'SKU-2'], $this->normalise(['SKU-1', 'sku-1', '', '  ', 'SKU-2']));
     }
 
     /**
@@ -147,8 +147,8 @@ final class RedisKeyPatternPurgerTest extends TestCase
     {
         $normalised = $this->normalise(['1000', '1000']);
 
-        self::assertSame(['1000'], $normalised);
-        self::assertIsString($normalised[0]);
+        $this->assertSame(['1000'], $normalised);
+        $this->assertIsString($normalised[0]);
     }
 
     /**

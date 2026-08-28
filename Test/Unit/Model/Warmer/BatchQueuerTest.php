@@ -19,7 +19,7 @@ use Magento\Catalog\Model\ResourceModel\Product\Collection;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-final class BatchQueuerTest extends TestCase
+class BatchQueuerTest extends TestCase
 {
     /** @var array<int, array{runId: int, type: string, ids: int[]}> */
     private array $published = [];
@@ -56,15 +56,15 @@ final class BatchQueuerTest extends TestCase
     {
         $runId = $this->queuer()->queue(BatchQueuer::TYPE_SIMPLE);
 
-        self::assertSame(7, $runId);
-        self::assertSame([['type' => BatchQueuer::TYPE_SIMPLE, 'total' => 5]], $this->opened);
+        $this->assertSame(7, $runId);
+        $this->assertSame([['type' => BatchQueuer::TYPE_SIMPLE, 'total' => 5]], $this->opened);
     }
 
     public function testTheProductsArePublishedInConfiguredBatches(): void
     {
         $this->queuer()->queue(BatchQueuer::TYPE_SIMPLE);
 
-        self::assertSame([[1, 2], [3, 4], [5]], array_column($this->published, 'ids'));
+        $this->assertSame([[1, 2], [3, 4], [5]], array_column($this->published, 'ids'));
     }
 
     /**
@@ -75,7 +75,7 @@ final class BatchQueuerTest extends TestCase
     {
         $this->queuer()->queue(BatchQueuer::TYPE_CONFIGURABLE);
 
-        self::assertSame([[1, 2, 3], [4, 5]], array_column($this->published, 'ids'));
+        $this->assertSame([[1, 2, 3], [4, 5]], array_column($this->published, 'ids'));
     }
 
     public function testEveryBatchCarriesItsRunAndType(): void
@@ -83,8 +83,8 @@ final class BatchQueuerTest extends TestCase
         $this->queuer()->queue(BatchQueuer::TYPE_SIMPLE);
 
         foreach ($this->published as $batch) {
-            self::assertSame(7, $batch['runId']);
-            self::assertSame(BatchQueuer::TYPE_SIMPLE, $batch['type']);
+            $this->assertSame(7, $batch['runId']);
+            $this->assertSame(BatchQueuer::TYPE_SIMPLE, $batch['type']);
         }
     }
 
@@ -97,18 +97,18 @@ final class BatchQueuerTest extends TestCase
         $this->queuer()->queue(BatchQueuer::TYPE_SIMPLE);
         $this->queuer()->queue(BatchQueuer::TYPE_CONFIGURABLE);
 
-        self::assertCount(2, $this->lock->taken);
-        self::assertNotSame($this->lock->taken[0], $this->lock->taken[1]);
-        self::assertStringContainsString(BatchQueuer::TYPE_SIMPLE, $this->lock->taken[0]);
+        $this->assertCount(2, $this->lock->taken);
+        $this->assertNotSame($this->lock->taken[0], $this->lock->taken[1]);
+        $this->assertStringContainsString(BatchQueuer::TYPE_SIMPLE, $this->lock->taken[0]);
     }
 
     public function testAHeldLockQueuesNothingAndReportsNoRun(): void
     {
         $this->lock->held = ['commerce_cachetools_warm_queue_' . BatchQueuer::TYPE_SIMPLE];
 
-        self::assertNull($this->queuer()->queue(BatchQueuer::TYPE_SIMPLE));
-        self::assertSame([], $this->published);
-        self::assertSame([], $this->opened);
+        $this->assertNull($this->queuer()->queue(BatchQueuer::TYPE_SIMPLE));
+        $this->assertSame([], $this->published);
+        $this->assertSame([], $this->opened);
     }
 
     /**
@@ -119,9 +119,9 @@ final class BatchQueuerTest extends TestCase
     {
         $this->hasOpenRun = true;
 
-        self::assertNull($this->queuer()->queue(BatchQueuer::TYPE_SIMPLE));
-        self::assertSame([], $this->opened);
-        self::assertCount(1, $this->logger->infos);
+        $this->assertNull($this->queuer()->queue(BatchQueuer::TYPE_SIMPLE));
+        $this->assertSame([], $this->opened);
+        $this->assertCount(1, $this->logger->infos);
     }
 
     /**
@@ -134,9 +134,9 @@ final class BatchQueuerTest extends TestCase
 
         $runId = $this->queuer()->queue(BatchQueuer::TYPE_SIMPLE);
 
-        self::assertSame(7, $runId);
-        self::assertSame([7], $this->completed);
-        self::assertSame([], $this->published);
+        $this->assertSame(7, $runId);
+        $this->assertSame([7], $this->completed);
+        $this->assertSame([], $this->published);
     }
 
     /**
@@ -151,7 +151,7 @@ final class BatchQueuerTest extends TestCase
         try {
             $this->queuer()->queue('bundle');
         } finally {
-            self::assertSame([], $this->lock->taken);
+            $this->assertSame([], $this->lock->taken);
         }
     }
 
@@ -159,10 +159,10 @@ final class BatchQueuerTest extends TestCase
     {
         $this->queuer()->queue(BatchQueuer::TYPE_SIMPLE);
 
-        self::assertCount(1, $this->logger->infos);
-        self::assertStringContainsString('#7', $this->logger->infos[0]);
-        self::assertStringContainsString('5 ' . BatchQueuer::TYPE_SIMPLE, $this->logger->infos[0]);
-        self::assertStringContainsString('3 batch(es)', $this->logger->infos[0]);
+        $this->assertCount(1, $this->logger->infos);
+        $this->assertStringContainsString('#7', $this->logger->infos[0]);
+        $this->assertStringContainsString('5 ' . BatchQueuer::TYPE_SIMPLE, $this->logger->infos[0]);
+        $this->assertStringContainsString('3 batch(es)', $this->logger->infos[0]);
     }
 
     private function queuer(): BatchQueuer

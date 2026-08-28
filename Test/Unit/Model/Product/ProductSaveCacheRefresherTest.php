@@ -19,7 +19,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-final class ProductSaveCacheRefresherTest extends TestCase
+class ProductSaveCacheRefresherTest extends TestCase
 {
     /** @var int[] */
     private array $edgePurges = [];
@@ -54,8 +54,8 @@ final class ProductSaveCacheRefresherTest extends TestCase
     {
         $this->refresher()->refresh($this->product('SKU-1'));
 
-        self::assertSame([10], $this->edgePurges);
-        self::assertSame([['SKU-1']], $this->keyPurges);
+        $this->assertSame([10], $this->edgePurges);
+        $this->assertSame([['SKU-1']], $this->keyPurges);
     }
 
     /**
@@ -68,7 +68,7 @@ final class ProductSaveCacheRefresherTest extends TestCase
 
         $this->refresher()->refresh($this->product('SKU-1'));
 
-        self::assertSame([['SKU-1', 'PARENT-1']], $this->keyPurges);
+        $this->assertSame([['SKU-1', 'PARENT-1']], $this->keyPurges);
     }
 
     /**
@@ -81,8 +81,8 @@ final class ProductSaveCacheRefresherTest extends TestCase
 
         $this->refresher()->refresh($this->product('SKU-1'));
 
-        self::assertSame([['SKU-1']], $this->keyPurges);
-        self::assertCount(1, $this->logger->errors);
+        $this->assertSame([['SKU-1']], $this->keyPurges);
+        $this->assertCount(1, $this->logger->errors);
     }
 
     /**
@@ -95,8 +95,8 @@ final class ProductSaveCacheRefresherTest extends TestCase
 
         $this->refresher()->refresh($this->product('SKU-1'));
 
-        self::assertSame([['SKU-1']], $this->keyPurges);
-        self::assertCount(1, $this->logger->warnings);
+        $this->assertSame([['SKU-1']], $this->keyPurges);
+        $this->assertCount(1, $this->logger->warnings);
     }
 
     public function testAFailedKeyPurgeIsLoggedRatherThanThrown(): void
@@ -105,7 +105,7 @@ final class ProductSaveCacheRefresherTest extends TestCase
 
         $this->refresher()->refresh($this->product('SKU-1'));
 
-        self::assertCount(1, $this->logger->errors);
+        $this->assertCount(1, $this->logger->errors);
     }
 
     /**
@@ -118,8 +118,8 @@ final class ProductSaveCacheRefresherTest extends TestCase
 
         $this->refresher()->refresh($this->product('SKU-1'));
 
-        self::assertSame([], $this->edgePurges);
-        self::assertSame([['SKU-1']], $this->keyPurges);
+        $this->assertSame([], $this->edgePurges);
+        $this->assertSame([['SKU-1']], $this->keyPurges);
     }
 
     /**
@@ -132,8 +132,8 @@ final class ProductSaveCacheRefresherTest extends TestCase
 
         $this->refresher()->refresh($this->product('SKU-1'));
 
-        self::assertSame([], $this->keyPurges);
-        self::assertSame([10], $this->edgePurges);
+        $this->assertSame([], $this->keyPurges);
+        $this->assertSame([10], $this->edgePurges);
     }
 
     /**
@@ -146,8 +146,8 @@ final class ProductSaveCacheRefresherTest extends TestCase
 
         $this->refresher(withStrategy: false)->refresh($this->product('SKU-1'));
 
-        self::assertSame([['SKU-1']], $this->keyPurges);
-        self::assertSame([], $this->logger->errors);
+        $this->assertSame([['SKU-1']], $this->keyPurges);
+        $this->assertSame([], $this->logger->errors);
     }
 
     /**
@@ -158,8 +158,8 @@ final class ProductSaveCacheRefresherTest extends TestCase
     {
         $this->refresher()->refresh($this->product(''));
 
-        self::assertSame([], $this->edgePurges);
-        self::assertSame([], $this->keyPurges);
+        $this->assertSame([], $this->edgePurges);
+        $this->assertSame([], $this->keyPurges);
     }
 
     private function refresher(bool $withStrategy = true): ProductSaveCacheRefresher

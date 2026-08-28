@@ -13,14 +13,14 @@ use Magento\Framework\Data\OptionSourceInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-final class PurgeStrategyTest extends TestCase
+class PurgeStrategyTest extends TestCase
 {
     /** @var string[] */
     private array $codes = ['surrogate_key', 'url'];
 
     public function testItIsUsableAsAConfigurationSource(): void
     {
-        self::assertInstanceOf(OptionSourceInterface::class, $this->source());
+        $this->assertInstanceOf(OptionSourceInterface::class, $this->source());
     }
 
     /**
@@ -29,18 +29,18 @@ final class PurgeStrategyTest extends TestCase
      */
     public function testOnlyTheRegisteredStrategiesAreOffered(): void
     {
-        self::assertSame(['surrogate_key', 'url'], array_column($this->source()->toOptionArray(), 'value'));
+        $this->assertSame(['surrogate_key', 'url'], array_column($this->source()->toOptionArray(), 'value'));
 
         $this->codes = ['url'];
 
-        self::assertSame(['url'], array_column($this->source()->toOptionArray(), 'value'));
+        $this->assertSame(['url'], array_column($this->source()->toOptionArray(), 'value'));
     }
 
     public function testAConfiguredLabelIsUsed(): void
     {
         $options = $this->source(['surrogate_key' => 'Surrogate keys (recommended)'])->toOptionArray();
 
-        self::assertSame('Surrogate keys (recommended)', (string) $options[0]['label']);
+        $this->assertSame('Surrogate keys (recommended)', (string) $options[0]['label']);
     }
 
     /**
@@ -53,14 +53,14 @@ final class PurgeStrategyTest extends TestCase
 
         $options = $this->source()->toOptionArray();
 
-        self::assertSame('Third party cdn', (string) $options[0]['label']);
+        $this->assertSame('Third party cdn', (string) $options[0]['label']);
     }
 
     public function testAnInstallWithNoStrategiesOffersNothingRatherThanADefault(): void
     {
         $this->codes = [];
 
-        self::assertSame([], $this->source()->toOptionArray());
+        $this->assertSame([], $this->source()->toOptionArray());
     }
 
     /**

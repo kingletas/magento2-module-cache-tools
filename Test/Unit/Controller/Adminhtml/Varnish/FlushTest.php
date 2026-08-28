@@ -19,7 +19,7 @@ use Magento\Framework\Controller\Result\JsonFactory;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-final class FlushTest extends TestCase
+class FlushTest extends TestCase
 {
     private ?int $status = null;
 
@@ -49,8 +49,8 @@ final class FlushTest extends TestCase
     {
         $controller = $this->controller();
 
-        self::assertInstanceOf(HttpPostActionInterface::class, $controller);
-        self::assertNotInstanceOf(HttpGetActionInterface::class, $controller);
+        $this->assertInstanceOf(HttpPostActionInterface::class, $controller);
+        $this->assertNotInstanceOf(HttpGetActionInterface::class, $controller);
     }
 
     /**
@@ -59,16 +59,16 @@ final class FlushTest extends TestCase
      */
     public function testItIsGuardedByItsOwnAclResource(): void
     {
-        self::assertSame('Commerce_CacheTools::varnish_flush', Flush::ADMIN_RESOURCE);
+        $this->assertSame('Commerce_CacheTools::varnish_flush', Flush::ADMIN_RESOURCE);
     }
 
     public function testTheRequestedUrlIsPurged(): void
     {
         $this->controller()->execute();
 
-        self::assertSame(['https://shop.test/scrub-top.html'], $this->purged);
-        self::assertTrue($this->data['success']);
-        self::assertSame(200, $this->status);
+        $this->assertSame(['https://shop.test/scrub-top.html'], $this->purged);
+        $this->assertTrue($this->data['success']);
+        $this->assertSame(200, $this->status);
     }
 
     public function testTheUrlIsTrimmedBeforePurging(): void
@@ -77,7 +77,7 @@ final class FlushTest extends TestCase
 
         $this->controller()->execute();
 
-        self::assertSame(['https://shop.test/a.html'], $this->purged);
+        $this->assertSame(['https://shop.test/a.html'], $this->purged);
     }
 
     /**
@@ -90,9 +90,9 @@ final class FlushTest extends TestCase
 
         $this->controller()->execute();
 
-        self::assertSame(400, $this->status);
-        self::assertFalse($this->data['success']);
-        self::assertSame([], $this->purged);
+        $this->assertSame(400, $this->status);
+        $this->assertFalse($this->data['success']);
+        $this->assertSame([], $this->purged);
     }
 
     /**
@@ -105,8 +105,8 @@ final class FlushTest extends TestCase
 
         $this->controller()->execute();
 
-        self::assertSame(422, $this->status);
-        self::assertFalse($this->data['success']);
+        $this->assertSame(422, $this->status);
+        $this->assertFalse($this->data['success']);
     }
 
     /**
@@ -119,7 +119,7 @@ final class FlushTest extends TestCase
 
         $this->controller()->execute();
 
-        self::assertStringContainsString('purge', $this->data['message']);
+        $this->assertStringContainsString('purge', $this->data['message']);
     }
 
     private function controller(): Flush

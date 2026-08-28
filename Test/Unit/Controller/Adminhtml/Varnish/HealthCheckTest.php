@@ -18,7 +18,7 @@ use Magento\Framework\Controller\Result\JsonFactory;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-final class HealthCheckTest extends TestCase
+class HealthCheckTest extends TestCase
 {
     private ?int $status = null;
 
@@ -46,7 +46,7 @@ final class HealthCheckTest extends TestCase
      */
     public function testItOnlyAnswersGets(): void
     {
-        self::assertInstanceOf(HttpGetActionInterface::class, $this->controller());
+        $this->assertInstanceOf(HttpGetActionInterface::class, $this->controller());
     }
 
     /**
@@ -55,8 +55,8 @@ final class HealthCheckTest extends TestCase
      */
     public function testItIsGuardedBySeparateAclResource(): void
     {
-        self::assertSame('Commerce_CacheTools::varnish_health', HealthCheck::ADMIN_RESOURCE);
-        self::assertNotSame(
+        $this->assertSame('Commerce_CacheTools::varnish_health', HealthCheck::ADMIN_RESOURCE);
+        $this->assertNotSame(
             \Commerce\CacheTools\Controller\Adminhtml\Varnish\Flush::ADMIN_RESOURCE,
             HealthCheck::ADMIN_RESOURCE
         );
@@ -66,9 +66,9 @@ final class HealthCheckTest extends TestCase
     {
         $this->controller()->execute();
 
-        self::assertSame(['https://shop.test/scrub-top.html'], $this->probed);
-        self::assertTrue($this->data['success']);
-        self::assertSame(HealthResult::STATE_HIT, $this->data['result']['cache_state']);
+        $this->assertSame(['https://shop.test/scrub-top.html'], $this->probed);
+        $this->assertTrue($this->data['success']);
+        $this->assertSame(HealthResult::STATE_HIT, $this->data['result']['cache_state']);
     }
 
     public function testTheUrlIsTrimmedBeforeProbing(): void
@@ -77,7 +77,7 @@ final class HealthCheckTest extends TestCase
 
         $this->controller()->execute();
 
-        self::assertSame(['https://shop.test/a.html'], $this->probed);
+        $this->assertSame(['https://shop.test/a.html'], $this->probed);
     }
 
     public function testAnEmptyUrlIsRefusedWithoutProbing(): void
@@ -86,9 +86,9 @@ final class HealthCheckTest extends TestCase
 
         $this->controller()->execute();
 
-        self::assertSame(400, $this->status);
-        self::assertFalse($this->data['success']);
-        self::assertSame([], $this->probed);
+        $this->assertSame(400, $this->status);
+        $this->assertFalse($this->data['success']);
+        $this->assertSame([], $this->probed);
     }
 
     /**
@@ -99,10 +99,10 @@ final class HealthCheckTest extends TestCase
     {
         $this->controller()->execute();
 
-        self::assertStringContainsString('HTTP 200', $this->data['message']);
-        self::assertStringContainsString('age 120s', $this->data['message']);
-        self::assertStringContainsString('cache-lhr-1', $this->data['message']);
-        self::assertIsArray($this->data['result']);
+        $this->assertStringContainsString('HTTP 200', $this->data['message']);
+        $this->assertStringContainsString('age 120s', $this->data['message']);
+        $this->assertStringContainsString('cache-lhr-1', $this->data['message']);
+        $this->assertIsArray($this->data['result']);
     }
 
     /**
@@ -120,8 +120,8 @@ final class HealthCheckTest extends TestCase
 
         $this->controller()->execute();
 
-        self::assertStringNotContainsString('age', $this->data['message']);
-        self::assertStringNotContainsString('served by', $this->data['message']);
+        $this->assertStringNotContainsString('age', $this->data['message']);
+        $this->assertStringNotContainsString('served by', $this->data['message']);
     }
 
     /**
@@ -138,9 +138,9 @@ final class HealthCheckTest extends TestCase
 
         $this->controller()->execute();
 
-        self::assertNull($this->status);
-        self::assertFalse($this->data['success']);
-        self::assertStringContainsString('could not be reached', $this->data['message']);
+        $this->assertNull($this->status);
+        $this->assertFalse($this->data['success']);
+        $this->assertStringContainsString('could not be reached', $this->data['message']);
     }
 
     private function controller(): HealthCheck

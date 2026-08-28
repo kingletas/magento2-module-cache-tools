@@ -16,7 +16,7 @@ use Magento\Catalog\Model\Product;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-final class SurrogateKeyPurgeStrategyTest extends TestCase
+class SurrogateKeyPurgeStrategyTest extends TestCase
 {
     /** @var string[] */
     private array $purgedKeys = [];
@@ -31,7 +31,7 @@ final class SurrogateKeyPurgeStrategyTest extends TestCase
 
     public function testItIsOneStrategyAmongOthers(): void
     {
-        self::assertInstanceOf(PurgeStrategyInterface::class, $this->strategy());
+        $this->assertInstanceOf(PurgeStrategyInterface::class, $this->strategy());
     }
 
     /**
@@ -40,8 +40,8 @@ final class SurrogateKeyPurgeStrategyTest extends TestCase
      */
     public function testTheProductsOwnCacheTagIsPurged(): void
     {
-        self::assertSame(1, $this->strategy()->purgeForProduct($this->product(10)));
-        self::assertSame([Product::CACHE_TAG . '_10'], $this->purgedKeys);
+        $this->assertSame(1, $this->strategy()->purgeForProduct($this->product(10)));
+        $this->assertSame([Product::CACHE_TAG . '_10'], $this->purgedKeys);
     }
 
     /**
@@ -52,7 +52,7 @@ final class SurrogateKeyPurgeStrategyTest extends TestCase
     {
         $this->strategy('acme_')->purgeForProduct($this->product(10));
 
-        self::assertSame(['acme_' . Product::CACHE_TAG . '_10'], $this->purgedKeys);
+        $this->assertSame(['acme_' . Product::CACHE_TAG . '_10'], $this->purgedKeys);
     }
 
     /**
@@ -61,8 +61,8 @@ final class SurrogateKeyPurgeStrategyTest extends TestCase
      */
     public function testAProductWithNoIdIsNotPurged(): void
     {
-        self::assertSame(0, $this->strategy()->purgeForProduct($this->product(0)));
-        self::assertSame([], $this->purgedKeys);
+        $this->assertSame(0, $this->strategy()->purgeForProduct($this->product(0)));
+        $this->assertSame([], $this->purgedKeys);
     }
 
     /**
@@ -73,7 +73,7 @@ final class SurrogateKeyPurgeStrategyTest extends TestCase
     {
         $this->purgeSucceeds = false;
 
-        self::assertSame(0, $this->strategy()->purgeForProduct($this->product(10)));
+        $this->assertSame(0, $this->strategy()->purgeForProduct($this->product(10)));
     }
 
     private function strategy(string $prefix = ''): SurrogateKeyPurgeStrategy

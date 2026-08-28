@@ -12,7 +12,7 @@ use Commerce\CacheTools\Model\Cache\NullKeyPatternPurger;
 use Commerce\CacheTools\Test\Unit\Fake\RecordingLogger;
 use PHPUnit\Framework\TestCase;
 
-final class NullKeyPatternPurgerTest extends TestCase
+class NullKeyPatternPurgerTest extends TestCase
 {
     private RecordingLogger $logger;
 
@@ -23,17 +23,17 @@ final class NullKeyPatternPurgerTest extends TestCase
 
     public function testItIsTheFallbackBindingForThePurgerContract(): void
     {
-        self::assertInstanceOf(KeyPatternPurgerInterface::class, $this->purger());
+        $this->assertInstanceOf(KeyPatternPurgerInterface::class, $this->purger());
     }
 
     public function testNothingIsPurgedAndTheCountSaysSo(): void
     {
-        self::assertSame(0, $this->purger()->purgeBySkus(['SKU-1', 'SKU-2']));
+        $this->assertSame(0, $this->purger()->purgeBySkus(['SKU-1', 'SKU-2']));
     }
 
     public function testItReportsThatPatternPurgingIsUnavailable(): void
     {
-        self::assertFalse($this->purger()->isSupported());
+        $this->assertFalse($this->purger()->isSupported());
     }
 
     /**
@@ -44,8 +44,8 @@ final class NullKeyPatternPurgerTest extends TestCase
     {
         $this->purger()->purgeBySkus(['SKU-1']);
 
-        self::assertCount(1, $this->logger->warnings);
-        self::assertStringContainsString('swatch', $this->logger->warnings[0]);
+        $this->assertCount(1, $this->logger->warnings);
+        $this->assertStringContainsString('swatch', $this->logger->warnings[0]);
     }
 
     /**
@@ -58,7 +58,7 @@ final class NullKeyPatternPurgerTest extends TestCase
         $purger->purgeBySkus(['SKU-1']);
         $purger->purgeBySkus(['SKU-2']);
 
-        self::assertCount(1, $this->logger->warnings);
+        $this->assertCount(1, $this->logger->warnings);
     }
 
     /**
@@ -66,8 +66,8 @@ final class NullKeyPatternPurgerTest extends TestCase
      */
     public function testAnEmptyBatchDoesNotWarn(): void
     {
-        self::assertSame(0, $this->purger()->purgeBySkus([]));
-        self::assertSame([], $this->logger->warnings);
+        $this->assertSame(0, $this->purger()->purgeBySkus([]));
+        $this->assertSame([], $this->logger->warnings);
     }
 
     private function purger(): NullKeyPatternPurger

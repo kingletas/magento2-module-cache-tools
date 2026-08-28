@@ -11,15 +11,15 @@ use Commerce\CacheTools\Model\Warmer\WarmResult;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
 
-final class WarmResultTest extends TestCase
+class WarmResultTest extends TestCase
 {
     public function testItCountsWhatWasAttemptedAndWhatSucceeded(): void
     {
         $result = new WarmResult(10, 8);
 
-        self::assertSame(10, $result->total);
-        self::assertSame(8, $result->warmed);
-        self::assertSame(2, $result->getFailed());
+        $this->assertSame(10, $result->total);
+        $this->assertSame(8, $result->warmed);
+        $this->assertSame(2, $result->getFailed());
     }
 
     /**
@@ -28,12 +28,12 @@ final class WarmResultTest extends TestCase
      */
     public function testTheFailureCountNeverGoesNegative(): void
     {
-        self::assertSame(0, (new WarmResult(8, 10))->getFailed());
+        $this->assertSame(0, (new WarmResult(8, 10))->getFailed());
     }
 
     public function testAFullySuccessfulBatchHasNoFailures(): void
     {
-        self::assertSame(0, (new WarmResult(10, 10))->getFailed());
+        $this->assertSame(0, (new WarmResult(10, 10))->getFailed());
     }
 
     /**
@@ -44,21 +44,21 @@ final class WarmResultTest extends TestCase
     {
         $result = new WarmResult(2, 1, ['SKU-1: HTTP 500']);
 
-        self::assertSame(['SKU-1: HTTP 500'], $result->messages);
+        $this->assertSame(['SKU-1: HTTP 500'], $result->messages);
     }
 
     public function testABatchWithNothingToWarmIsAllZeroes(): void
     {
         $result = new WarmResult(0, 0);
 
-        self::assertSame(0, $result->getFailed());
-        self::assertSame([], $result->messages);
+        $this->assertSame(0, $result->getFailed());
+        $this->assertSame([], $result->messages);
     }
 
     public function testItIsImmutable(): void
     {
         foreach (['total', 'warmed', 'messages'] as $property) {
-            self::assertTrue(
+            $this->assertTrue(
                 (new ReflectionProperty(WarmResult::class, $property))->isReadOnly(),
                 sprintf('%s must be read-only.', $property)
             );

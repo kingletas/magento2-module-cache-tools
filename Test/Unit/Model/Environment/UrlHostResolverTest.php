@@ -26,7 +26,7 @@ class UrlHostResolverTest extends TestCase
     #[DataProvider('urlProvider')]
     public function testResolvesTheHost(string $url, string $expected): void
     {
-        self::assertSame($expected, $this->resolver->resolve($url));
+        $this->assertSame($expected, $this->resolver->resolve($url));
     }
 
     /**
@@ -57,7 +57,7 @@ class UrlHostResolverTest extends TestCase
     #[DataProvider('ipv6Provider')]
     public function testHandlesBracketedIpv6Literals(string $url, string $expected): void
     {
-        self::assertSame($expected, $this->resolver->resolve($url));
+        $this->assertSame($expected, $this->resolver->resolve($url));
     }
 
     /**

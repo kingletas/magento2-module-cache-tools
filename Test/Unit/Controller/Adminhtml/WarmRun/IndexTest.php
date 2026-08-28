@@ -18,7 +18,7 @@ use Magento\Framework\View\Result\PageFactory;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-final class IndexTest extends TestCase
+class IndexTest extends TestCase
 {
     /** @var string[] */
     private array $titles = [];
@@ -39,20 +39,20 @@ final class IndexTest extends TestCase
     {
         $controller = $this->controller();
 
-        self::assertInstanceOf(HttpGetActionInterface::class, $controller);
-        self::assertNotInstanceOf(HttpPostActionInterface::class, $controller);
+        $this->assertInstanceOf(HttpGetActionInterface::class, $controller);
+        $this->assertNotInstanceOf(HttpPostActionInterface::class, $controller);
     }
 
     public function testItIsGuardedByItsOwnAclResource(): void
     {
-        self::assertSame('Commerce_CacheTools::warm_runs', Index::ADMIN_RESOURCE);
+        $this->assertSame('Commerce_CacheTools::warm_runs', Index::ADMIN_RESOURCE);
     }
 
     public function testThePageIsRenderedUnderItsOwnMenuEntry(): void
     {
         $this->controller()->execute();
 
-        self::assertSame(Index::ADMIN_RESOURCE, $this->activeMenu);
+        $this->assertSame(Index::ADMIN_RESOURCE, $this->activeMenu);
     }
 
     /**
@@ -63,7 +63,7 @@ final class IndexTest extends TestCase
     {
         $this->controller()->execute();
 
-        self::assertSame(['Cache Warm Runs'], $this->titles);
+        $this->assertSame(['Cache Warm Runs'], $this->titles);
     }
 
     private function controller(): Index

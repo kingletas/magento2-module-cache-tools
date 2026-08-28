@@ -20,11 +20,11 @@ use RuntimeException;
 /**
  * The guard in front of everything destructive in this module.
  */
-final class EnvironmentPolicyTest extends TestCase
+class EnvironmentPolicyTest extends TestCase
 {
     public function testBothSignalsAgreeingMeansProduction(): void
     {
-        self::assertTrue(
+        $this->assertTrue(
             $this->policy(declared: 'production', host: 'www.example.com', productionHost: 'www.example.com')
                 ->isProduction()
         );
@@ -36,7 +36,7 @@ final class EnvironmentPolicyTest extends TestCase
         string $host,
         string $productionHost
     ): void {
-        self::assertFalse($this->policy($declared, $host, $productionHost)->isProduction());
+        $this->assertFalse($this->policy($declared, $host, $productionHost)->isProduction());
     }
 
     /**
@@ -60,7 +60,7 @@ final class EnvironmentPolicyTest extends TestCase
      */
     public function testAnUnconfiguredProductionHostIsRefusedEvenWhenEnvPhpSaysProduction(): void
     {
-        self::assertFalse(
+        $this->assertFalse(
             $this->policy(declared: 'production', host: 'www.example.com', productionHost: '')
                 ->isProduction()
         );
@@ -69,7 +69,7 @@ final class EnvironmentPolicyTest extends TestCase
     #[DataProvider('casings')]
     public function testTheDeclaredEnvironmentIsMatchedCaseAndWhitespaceInsensitively(string $declared): void
     {
-        self::assertTrue(
+        $this->assertTrue(
             $this->policy($declared, 'www.example.com', 'www.example.com')->isProduction()
         );
     }
@@ -96,7 +96,7 @@ final class EnvironmentPolicyTest extends TestCase
         $deploymentConfig = $this->createMock(DeploymentConfig::class);
         $deploymentConfig->method('get')->willThrowException(new RuntimeException('env.php is unreadable'));
 
-        self::assertFalse(
+        $this->assertFalse(
             $this->policy(
                 host: 'www.example.com',
                 productionHost: 'www.example.com',
@@ -119,8 +119,8 @@ final class EnvironmentPolicyTest extends TestCase
             storeManager: $storeManager
         );
 
-        self::assertSame('', $policy->getHost());
-        self::assertFalse($policy->isProduction());
+        $this->assertSame('', $policy->getHost());
+        $this->assertFalse($policy->isProduction());
     }
 
     /**
@@ -130,7 +130,7 @@ final class EnvironmentPolicyTest extends TestCase
     public function testTheVerdictIsComputedOnce(): void
     {
         $deploymentConfig = $this->createMock(DeploymentConfig::class);
-        $deploymentConfig->expects(self::once())->method('get')->willReturn('production');
+        $deploymentConfig->expects($this->once())->method('get')->willReturn('production');
 
         $policy = $this->policy(
             host: 'www.example.com',
@@ -151,18 +151,18 @@ final class EnvironmentPolicyTest extends TestCase
     {
         $description = $this->policy(declared: null, host: '', productionHost: '')->describe();
 
-        self::assertStringContainsString('environment=undeclared', $description);
-        self::assertStringContainsString('host=unknown', $description);
-        self::assertStringContainsString('expected-production-host=unconfigured', $description);
+        $this->assertStringContainsString('environment=undeclared', $description);
+        $this->assertStringContainsString('host=unknown', $description);
+        $this->assertStringContainsString('expected-production-host=unconfigured', $description);
     }
 
     public function testDescribeCarriesTheRealValuesWhenThereAreSome(): void
     {
         $description = $this->policy('stage', 'stage.example.com', 'www.example.com')->describe();
 
-        self::assertStringContainsString('environment=stage', $description);
-        self::assertStringContainsString('host=stage.example.com', $description);
-        self::assertStringContainsString('expected-production-host=www.example.com', $description);
+        $this->assertStringContainsString('environment=stage', $description);
+        $this->assertStringContainsString('host=stage.example.com', $description);
+        $this->assertStringContainsString('expected-production-host=www.example.com', $description);
     }
 
     private function policy(

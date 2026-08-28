@@ -27,21 +27,21 @@ class HealthResultTest extends TestCase
             servedBy: 'cache-lhr-1'
         );
 
-        self::assertTrue($result->reachable);
-        self::assertTrue($result->isCached());
-        self::assertSame(42, $result->age);
-        self::assertNull($result->error);
+        $this->assertTrue($result->reachable);
+        $this->assertTrue($result->isCached());
+        $this->assertSame(42, $result->age);
+        $this->assertNull($result->error);
     }
 
     public function testAnUnreachableProbeDefaultsToUnknownWithNoStatus(): void
     {
         $result = new HealthResult('https://example.test/p', reachable: false, error: 'timed out');
 
-        self::assertFalse($result->reachable);
-        self::assertSame(0, $result->httpStatus);
-        self::assertSame(HealthResult::STATE_UNKNOWN, $result->cacheState);
-        self::assertFalse($result->isCached());
-        self::assertSame('timed out', $result->error);
+        $this->assertFalse($result->reachable);
+        $this->assertSame(0, $result->httpStatus);
+        $this->assertSame(HealthResult::STATE_UNKNOWN, $result->cacheState);
+        $this->assertFalse($result->isCached());
+        $this->assertSame('timed out', $result->error);
     }
 
     /**
@@ -60,7 +60,7 @@ class HealthResultTest extends TestCase
         foreach ([HealthResult::STATE_MISS, HealthResult::STATE_PASS, HealthResult::STATE_UNKNOWN] as $state) {
             $result = new HealthResult('https://example.test/p', reachable: true, cacheState: $state);
 
-            self::assertFalse($result->isCached(), $state);
+            $this->assertFalse($result->isCached(), $state);
         }
     }
 }

@@ -12,11 +12,11 @@ use Commerce\CacheTools\Ui\Component\Listing\Column\StatusOptions;
 use Magento\Framework\Data\OptionSourceInterface;
 use PHPUnit\Framework\TestCase;
 
-final class StatusOptionsTest extends TestCase
+class StatusOptionsTest extends TestCase
 {
     public function testItIsUsableAsAGridFilterSource(): void
     {
-        self::assertInstanceOf(OptionSourceInterface::class, new StatusOptions());
+        $this->assertInstanceOf(OptionSourceInterface::class, new StatusOptions());
     }
 
     /**
@@ -27,7 +27,7 @@ final class StatusOptionsTest extends TestCase
     {
         $values = array_column((new StatusOptions())->toOptionArray(), 'value');
 
-        self::assertSame(
+        $this->assertSame(
             [
                 WarmRunInterface::STATUS_RUNNING,
                 WarmRunInterface::STATUS_COMPLETE,
@@ -40,8 +40,8 @@ final class StatusOptionsTest extends TestCase
     public function testEveryOptionCarriesALabelDistinctFromItsStoredValue(): void
     {
         foreach ((new StatusOptions())->toOptionArray() as $option) {
-            self::assertNotSame('', (string) $option['label']);
-            self::assertNotSame($option['value'], (string) $option['label']);
+            $this->assertNotSame('', (string) $option['label']);
+            $this->assertNotSame($option['value'], (string) $option['label']);
         }
     }
 }

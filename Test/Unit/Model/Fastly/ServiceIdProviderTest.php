@@ -16,7 +16,7 @@ use Magento\Framework\Exception\LocalizedException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-final class ServiceIdProviderTest extends TestCase
+class ServiceIdProviderTest extends TestCase
 {
     /** @var array<int, array<string, mixed>> */
     private array $searches = [];
@@ -42,14 +42,14 @@ final class ServiceIdProviderTest extends TestCase
     {
         $this->configuredId = 'svc_configured';
 
-        self::assertSame('svc_configured', $this->provider()->get());
-        self::assertSame([], $this->searches);
+        $this->assertSame('svc_configured', $this->provider()->get());
+        $this->assertSame([], $this->searches);
     }
 
     public function testAnUnconfiguredIdIsDiscoveredByServiceName(): void
     {
-        self::assertSame('svc_123', $this->provider()->get());
-        self::assertSame([['name' => 'shop-production']], $this->searches);
+        $this->assertSame('svc_123', $this->provider()->get());
+        $this->assertSame([['name' => 'shop-production']], $this->searches);
     }
 
     /**
@@ -63,7 +63,7 @@ final class ServiceIdProviderTest extends TestCase
         $provider->get();
         $provider->get();
 
-        self::assertCount(1, $this->searches);
+        $this->assertCount(1, $this->searches);
     }
 
     /**
@@ -74,9 +74,9 @@ final class ServiceIdProviderTest extends TestCase
     {
         $this->provider()->get();
 
-        self::assertCount(1, $this->logger->infos);
-        self::assertStringContainsString('shop-production', $this->logger->infos[0]);
-        self::assertStringContainsString('svc_123', $this->logger->infos[0]);
+        $this->assertCount(1, $this->logger->infos);
+        $this->assertStringContainsString('shop-production', $this->logger->infos[0]);
+        $this->assertStringContainsString('svc_123', $this->logger->infos[0]);
     }
 
     /**

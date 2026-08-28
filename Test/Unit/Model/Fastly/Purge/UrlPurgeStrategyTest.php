@@ -16,7 +16,7 @@ use Magento\Catalog\Api\Data\ProductInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-final class UrlPurgeStrategyTest extends TestCase
+class UrlPurgeStrategyTest extends TestCase
 {
     /** @var string[] */
     private array $urls = ['https://shop.test/scrub-top.html'];
@@ -36,7 +36,7 @@ final class UrlPurgeStrategyTest extends TestCase
 
     public function testItIsOneStrategyAmongOthers(): void
     {
-        self::assertInstanceOf(PurgeStrategyInterface::class, $this->strategy());
+        $this->assertInstanceOf(PurgeStrategyInterface::class, $this->strategy());
     }
 
     /**
@@ -47,8 +47,8 @@ final class UrlPurgeStrategyTest extends TestCase
     {
         $this->urls = ['https://uk.shop.test/scrub-top.html', 'https://de.shop.test/kittel.html'];
 
-        self::assertSame(2, $this->strategy()->purgeForProduct($this->product()));
-        self::assertSame([$this->urls], $this->purged);
+        $this->assertSame(2, $this->strategy()->purgeForProduct($this->product()));
+        $this->assertSame([$this->urls], $this->purged);
     }
 
     /**
@@ -60,7 +60,7 @@ final class UrlPurgeStrategyTest extends TestCase
         $this->urls = ['https://shop.test/a.html', 'https://shop.test/b.html'];
         $this->outcomes = ['https://shop.test/b.html' => false];
 
-        self::assertSame(1, $this->strategy()->purgeForProduct($this->product()));
+        $this->assertSame(1, $this->strategy()->purgeForProduct($this->product()));
     }
 
     /**
@@ -71,8 +71,8 @@ final class UrlPurgeStrategyTest extends TestCase
     {
         $this->urls = [];
 
-        self::assertSame(0, $this->strategy()->purgeForProduct($this->product()));
-        self::assertSame([], $this->purged);
+        $this->assertSame(0, $this->strategy()->purgeForProduct($this->product()));
+        $this->assertSame([], $this->purged);
     }
 
     private function strategy(): UrlPurgeStrategy

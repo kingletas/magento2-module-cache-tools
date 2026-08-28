@@ -23,10 +23,10 @@ class PurgeResultTest extends TestCase
         $success = new PurgeResult('https://example.test/p', isSuccess: true, message: __('Sent.'));
         $failure = new PurgeResult('keys', isSuccess: false, message: __('No.'));
 
-        self::assertSame(
+        $this->assertSame(
             ['target' => 'https://example.test/p', 'status' => 'success', 'message' => 'Sent.'],
             $success->toArray()
         );
-        self::assertSame(['target' => 'keys', 'status' => 'error', 'message' => 'No.'], $failure->toArray());
+        $this->assertSame(['target' => 'keys', 'status' => 'error', 'message' => 'No.'], $failure->toArray());
     }
 }

@@ -33,15 +33,15 @@ class WarmLockTest extends TestCase
     public function testRunsTheCallbackAndReleasesTheLock(): void
     {
         $this->lockManager->method('lock')->willReturn(true);
-        $this->lockManager->expects(self::once())->method('unlock')->with('warm');
+        $this->lockManager->expects($this->once())->method('unlock')->with('warm');
 
-        self::assertSame('done', $this->lock->runLocked('warm', static fn (): string => 'done'));
+        $this->assertSame('done', $this->lock->runLocked('warm', static fn (): string => 'done'));
     }
 
     public function testSkipsWhenTheLockIsAlreadyHeld(): void
     {
         $this->lockManager->method('lock')->willReturn(false);
-        $this->lockManager->expects(self::never())->method('unlock');
+        $this->lockManager->expects($this->never())->method('unlock');
 
         $ran = false;
         $result = $this->lock->runLocked('warm', static function () use (&$ran): string {
@@ -50,8 +50,8 @@ class WarmLockTest extends TestCase
             return 'done';
         });
 
-        self::assertNull($result);
-        self::assertFalse($ran, 'The callback must not run when the lock is held.');
+        $this->assertNull($result);
+        $this->assertFalse($ran, 'The callback must not run when the lock is held.');
     }
 
     /**
@@ -60,7 +60,7 @@ class WarmLockTest extends TestCase
     public function testReleasesTheLockWhenTheCallbackThrows(): void
     {
         $this->lockManager->method('lock')->willReturn(true);
-        $this->lockManager->expects(self::once())->method('unlock')->with('warm');
+        $this->lockManager->expects($this->once())->method('unlock')->with('warm');
 
         $this->expectException(RuntimeException::class);
 
@@ -77,9 +77,9 @@ class WarmLockTest extends TestCase
     {
         $this->lockManager->method('lock')->willReturn(true);
         $this->lockManager->method('unlock')->willThrowException(new RuntimeException('redis gone'));
-        $this->logger->expects(self::once())->method('warning');
+        $this->logger->expects($this->once())->method('warning');
 
-        self::assertSame('done', $this->lock->runLocked('warm', static fn (): string => 'done'));
+        $this->assertSame('done', $this->lock->runLocked('warm', static fn (): string => 'done'));
     }
 
     /**
@@ -87,8 +87,8 @@ class WarmLockTest extends TestCase
      */
     public function testAcquisitionIsASingleAtomicCall(): void
     {
-        $this->lockManager->expects(self::once())->method('lock')->with('warm', 0)->willReturn(true);
-        $this->lockManager->expects(self::never())->method('isLocked');
+        $this->lockManager->expects($this->once())->method('lock')->with('warm', 0)->willReturn(true);
+        $this->lockManager->expects($this->never())->method('isLocked');
 
         $this->lock->runLocked('warm', static fn (): bool => true);
     }

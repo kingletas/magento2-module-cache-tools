@@ -18,7 +18,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-final class CacheUrlTest extends TestCase
+class CacheUrlTest extends TestCase
 {
     /** @var array<int, array{active: bool, baseUrl: string}> */
     private array $stores = [1 => ['active' => true, 'baseUrl' => 'https://shop.test/']];
@@ -39,16 +39,16 @@ final class CacheUrlTest extends TestCase
 
     public function testItIsUsableAsALayoutViewModel(): void
     {
-        self::assertInstanceOf(ArgumentInterface::class, $this->viewModel());
+        $this->assertInstanceOf(ArgumentInterface::class, $this->viewModel());
     }
 
     public function testThePanelIsOffWhenFastlyIsDisabled(): void
     {
-        self::assertTrue($this->viewModel()->isEnabled());
+        $this->assertTrue($this->viewModel()->isEnabled());
 
         $this->enabled = false;
 
-        self::assertFalse($this->viewModel()->isEnabled());
+        $this->assertFalse($this->viewModel()->isEnabled());
     }
 
     /**
@@ -59,7 +59,7 @@ final class CacheUrlTest extends TestCase
     {
         $this->stores[2] = ['active' => true, 'baseUrl' => 'https://de.shop.test/'];
 
-        self::assertSame(
+        $this->assertSame(
             ['https://shop.test/', 'https://de.shop.test/'],
             $this->viewModel()->getCacheUrls()
         );
@@ -69,7 +69,7 @@ final class CacheUrlTest extends TestCase
     {
         $this->stores[2] = ['active' => false, 'baseUrl' => 'https://de.shop.test/'];
 
-        self::assertSame(['https://shop.test/'], $this->viewModel()->getCacheUrls());
+        $this->assertSame(['https://shop.test/'], $this->viewModel()->getCacheUrls());
     }
 
     /**
@@ -80,7 +80,7 @@ final class CacheUrlTest extends TestCase
     {
         $this->stores = [1 => ['active' => true, 'baseUrl' => 'https://shop.test']];
 
-        self::assertSame(['https://shop.test/'], $this->viewModel()->getCacheUrls());
+        $this->assertSame(['https://shop.test/'], $this->viewModel()->getCacheUrls());
     }
 
     /**
@@ -91,7 +91,7 @@ final class CacheUrlTest extends TestCase
     {
         $this->extraUrls = ['https://shop.test/scrubs.html'];
 
-        self::assertSame(
+        $this->assertSame(
             ['https://shop.test/', 'https://shop.test/scrubs.html'],
             $this->viewModel()->getCacheUrls()
         );
@@ -105,7 +105,7 @@ final class CacheUrlTest extends TestCase
     {
         $this->extraUrls = ['https://shop.test/'];
 
-        self::assertSame(['https://shop.test/'], $this->viewModel()->getCacheUrls());
+        $this->assertSame(['https://shop.test/'], $this->viewModel()->getCacheUrls());
     }
 
     /**
@@ -117,21 +117,21 @@ final class CacheUrlTest extends TestCase
         $this->storeFailure = new RuntimeException('store table is unreadable');
         $this->extraUrls = ['https://shop.test/scrubs.html'];
 
-        self::assertSame(['https://shop.test/scrubs.html'], $this->viewModel()->getCacheUrls());
+        $this->assertSame(['https://shop.test/scrubs.html'], $this->viewModel()->getCacheUrls());
     }
 
     public function testTheJsConfigCarriesBothEndpointsAndTheUrls(): void
     {
         $config = (array) (new Json())->unserialize($this->viewModel()->getJsonConfig());
 
-        self::assertSame('https://admin.test/commerce_cachetools/varnish/flush', $config['flushUrl']);
-        self::assertSame('https://admin.test/commerce_cachetools/varnish/healthCheck', $config['healthUrl']);
-        self::assertSame(['https://shop.test/'], $config['urls']);
+        $this->assertSame('https://admin.test/commerce_cachetools/varnish/flush', $config['flushUrl']);
+        $this->assertSame('https://admin.test/commerce_cachetools/varnish/healthCheck', $config['healthUrl']);
+        $this->assertSame(['https://shop.test/'], $config['urls']);
     }
 
     public function testTheJsConfigIsJsonRatherThanAnArray(): void
     {
-        self::assertJson($this->viewModel()->getJsonConfig());
+        $this->assertJson($this->viewModel()->getJsonConfig());
     }
 
     private function viewModel(): CacheUrl

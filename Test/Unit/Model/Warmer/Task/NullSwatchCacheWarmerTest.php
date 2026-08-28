@@ -12,7 +12,7 @@ use Commerce\CacheTools\Model\Warmer\Task\NullSwatchCacheWarmer;
 use Magento\Catalog\Api\Data\ProductInterface;
 use PHPUnit\Framework\TestCase;
 
-final class NullSwatchCacheWarmerTest extends TestCase
+class NullSwatchCacheWarmerTest extends TestCase
 {
     /**
      * Keeps the interface bound and the warmer constructable on a store with no
@@ -20,7 +20,7 @@ final class NullSwatchCacheWarmerTest extends TestCase
      */
     public function testItIsTheDefaultBindingForTheSwatchContract(): void
     {
-        self::assertInstanceOf(SwatchCacheWarmerInterface::class, new NullSwatchCacheWarmer());
+        $this->assertInstanceOf(SwatchCacheWarmerInterface::class, new NullSwatchCacheWarmer());
     }
 
     /**
@@ -28,6 +28,6 @@ final class NullSwatchCacheWarmerTest extends TestCase
      */
     public function testItReportsThatNothingWasWarmed(): void
     {
-        self::assertFalse((new NullSwatchCacheWarmer())->warm($this->createMock(ProductInterface::class)));
+        $this->assertFalse((new NullSwatchCacheWarmer())->warm($this->createMock(ProductInterface::class)));
     }
 }

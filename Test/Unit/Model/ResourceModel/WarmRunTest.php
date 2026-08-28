@@ -17,7 +17,7 @@ use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
 
-final class WarmRunTest extends TestCase
+class WarmRunTest extends TestCase
 {
     private const NOW = '2026-08-26 12:00:00';
 
@@ -77,11 +77,11 @@ final class WarmRunTest extends TestCase
         $resource = (new ReflectionClass(WarmRun::class))->newInstanceWithoutConstructor();
         (new ReflectionMethod($resource, '_construct'))->invoke($resource);
 
-        self::assertSame(
+        $this->assertSame(
             WarmRun::TABLE_NAME,
             (new ReflectionProperty(WarmRun::class, '_mainTable'))->getValue($resource)
         );
-        self::assertSame(WarmRunInterface::RUN_ID, $resource->getIdFieldName());
+        $this->assertSame(WarmRunInterface::RUN_ID, $resource->getIdFieldName());
     }
 
     /**
@@ -91,11 +91,11 @@ final class WarmRunTest extends TestCase
     {
         $this->resource()->incrementProgress(5, 10, 2);
 
-        self::assertSame(
+        $this->assertSame(
             '`processed_products` + 10',
             (string) $this->updates[0]['values'][WarmRunInterface::PROCESSED_PRODUCTS]
         );
-        self::assertSame(
+        $this->assertSame(
             '`failed_products` + 2',
             (string) $this->updates[0]['values'][WarmRunInterface::FAILED_PRODUCTS]
         );
@@ -110,8 +110,8 @@ final class WarmRunTest extends TestCase
         $this->resource()->incrementProgress(5, 10, 2);
 
         $where = implode(' ', (array) $this->updates[0]['where']);
-        self::assertStringContainsString("run_id = '5'", $where);
-        self::assertStringContainsString("status = '" . WarmRunInterface::STATUS_RUNNING . "'", $where);
+        $this->assertStringContainsString("run_id = '5'", $where);
+        $this->assertStringContainsString("status = '" . WarmRunInterface::STATUS_RUNNING . "'", $where);
     }
 
     /**
@@ -122,7 +122,7 @@ final class WarmRunTest extends TestCase
     {
         $this->affected = 0;
 
-        self::assertSame(0, $this->resource()->incrementProgress(404, 10, 2));
+        $this->assertSame(0, $this->resource()->incrementProgress(404, 10, 2));
     }
 
     /**
@@ -131,15 +131,15 @@ final class WarmRunTest extends TestCase
      */
     public function testCompletionIsDecidedAndWrittenInOneStatement(): void
     {
-        self::assertTrue($this->resource()->completeIfDone(5, self::NOW));
+        $this->assertTrue($this->resource()->completeIfDone(5, self::NOW));
 
         $update = $this->updates[0];
-        self::assertSame(WarmRunInterface::STATUS_COMPLETE, $update['values'][WarmRunInterface::STATUS]);
-        self::assertSame(self::NOW, $update['values'][WarmRunInterface::FINISHED_AT]);
+        $this->assertSame(WarmRunInterface::STATUS_COMPLETE, $update['values'][WarmRunInterface::STATUS]);
+        $this->assertSame(self::NOW, $update['values'][WarmRunInterface::FINISHED_AT]);
 
         $where = implode(' ', (array) $update['where']);
-        self::assertStringContainsString('`processed_products` >= `total_products`', $where);
-        self::assertStringContainsString("status = '" . WarmRunInterface::STATUS_RUNNING . "'", $where);
+        $this->assertStringContainsString('`processed_products` >= `total_products`', $where);
+        $this->assertStringContainsString("status = '" . WarmRunInterface::STATUS_RUNNING . "'", $where);
     }
 
     /**
@@ -150,7 +150,7 @@ final class WarmRunTest extends TestCase
     {
         $this->affected = 0;
 
-        self::assertFalse($this->resource()->completeIfDone(5, self::NOW));
+        $this->assertFalse($this->resource()->completeIfDone(5, self::NOW));
     }
 
     /**
@@ -158,11 +158,11 @@ final class WarmRunTest extends TestCase
      */
     public function testStalenessIsMeasuredFromTheLastProgressUpdate(): void
     {
-        self::assertSame(1, $this->resource()->markStaleRuns('2026-08-26 08:00:00', self::NOW));
+        $this->assertSame(1, $this->resource()->markStaleRuns('2026-08-26 08:00:00', self::NOW));
 
         $where = implode(' ', (array) $this->updates[0]['where']);
-        self::assertStringContainsString("updated_at < '2026-08-26 08:00:00'", $where);
-        self::assertStringNotContainsString('started_at', $where);
+        $this->assertStringContainsString("updated_at < '2026-08-26 08:00:00'", $where);
+        $this->assertStringNotContainsString('started_at', $where);
     }
 
     public function testOnlyRunningRunsAreReaped(): void
@@ -170,15 +170,15 @@ final class WarmRunTest extends TestCase
         $this->resource()->markStaleRuns('2026-08-26 08:00:00', self::NOW);
 
         $where = implode(' ', (array) $this->updates[0]['where']);
-        self::assertStringContainsString("status = '" . WarmRunInterface::STATUS_RUNNING . "'", $where);
+        $this->assertStringContainsString("status = '" . WarmRunInterface::STATUS_RUNNING . "'", $where);
     }
 
     public function testAReapedRunIsMarkedStaleAndStamped(): void
     {
         $this->resource()->markStaleRuns('2026-08-26 08:00:00', self::NOW);
 
-        self::assertSame(WarmRunInterface::STATUS_STALE, $this->updates[0]['values'][WarmRunInterface::STATUS]);
-        self::assertSame(self::NOW, $this->updates[0]['values'][WarmRunInterface::FINISHED_AT]);
+        $this->assertSame(WarmRunInterface::STATUS_STALE, $this->updates[0]['values'][WarmRunInterface::STATUS]);
+        $this->assertSame(self::NOW, $this->updates[0]['values'][WarmRunInterface::FINISHED_AT]);
     }
 
     /**
@@ -187,9 +187,9 @@ final class WarmRunTest extends TestCase
      */
     public function testAnOpenRunIsLookedUpByTypeAndStatus(): void
     {
-        self::assertTrue($this->resource()->hasOpenRun('product'));
+        $this->assertTrue($this->resource()->hasOpenRun('product'));
 
-        self::assertSame(
+        $this->assertSame(
             [
                 ['condition' => WarmRunInterface::WARM_TYPE . ' = ?', 'value' => 'product'],
                 ['condition' => WarmRunInterface::STATUS . ' = ?', 'value' => WarmRunInterface::STATUS_RUNNING],
@@ -202,14 +202,14 @@ final class WarmRunTest extends TestCase
     {
         $this->resource()->hasOpenRun('product');
 
-        self::assertSame(1, $this->limit);
+        $this->assertSame(1, $this->limit);
     }
 
     public function testNoOpenRunReadsAsFalse(): void
     {
         $this->fetchOneResult = false;
 
-        self::assertFalse($this->resource()->hasOpenRun('product'));
+        $this->assertFalse($this->resource()->hasOpenRun('product'));
     }
 
     private function resource(): WarmRun&MockObject

@@ -20,7 +20,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * The section id is a di.xml argument, never a constant.
  */
-final class ConfigTest extends TestCase
+class ConfigTest extends TestCase
 {
     private const string SECTION = 'commerce_cachetools';
 
@@ -38,7 +38,7 @@ final class ConfigTest extends TestCase
     {
         $config = $this->config(['acme_warming/fastly/enable' => '1'], 'acme_warming');
 
-        self::assertTrue($config->isFastlyEnabled());
+        $this->assertTrue($config->isFastlyEnabled());
     }
 
     /**
@@ -48,7 +48,7 @@ final class ConfigTest extends TestCase
     {
         $config = $this->config([self::SECTION . '/fastly/token' => 'cipher']);
 
-        self::assertSame('decrypted:cipher', $config->getFastlyToken());
+        $this->assertSame('decrypted:cipher', $config->getFastlyToken());
     }
 
     public function testAMissingFastlyTokenIsRefusedRatherThanReturnedEmpty(): void
@@ -64,14 +64,14 @@ final class ConfigTest extends TestCase
      */
     public function testAnUnsetServiceIdIsEmptyRatherThanAnError(): void
     {
-        self::assertSame('', $this->config([])->getFastlyServiceId());
+        $this->assertSame('', $this->config([])->getFastlyServiceId());
     }
 
     public function testTheServiceIdIsDecryptedWhenSet(): void
     {
         $config = $this->config([self::SECTION . '/fastly/service_id' => 'cipher']);
 
-        self::assertSame('decrypted:cipher', $config->getFastlyServiceId());
+        $this->assertSame('decrypted:cipher', $config->getFastlyServiceId());
     }
 
     /**
@@ -81,16 +81,16 @@ final class ConfigTest extends TestCase
     {
         $config = $this->config([]);
 
-        self::assertSame(Config::DEFAULT_BATCH_SIZE, $config->getSimpleBatchSize());
-        self::assertSame(Config::DEFAULT_BATCH_SIZE, $config->getConfigurableBatchSize());
-        self::assertSame(Config::DEFAULT_STALE_RUN_HOURS, $config->getStaleRunHours());
+        $this->assertSame(Config::DEFAULT_BATCH_SIZE, $config->getSimpleBatchSize());
+        $this->assertSame(Config::DEFAULT_BATCH_SIZE, $config->getConfigurableBatchSize());
+        $this->assertSame(Config::DEFAULT_STALE_RUN_HOURS, $config->getStaleRunHours());
     }
 
     public function testAConfiguredBatchSizeWins(): void
     {
         $config = $this->config([self::SECTION . '/warmer/simple_batch_size' => '250']);
 
-        self::assertSame(250, $config->getSimpleBatchSize());
+        $this->assertSame(250, $config->getSimpleBatchSize());
     }
 
     /**

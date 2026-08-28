@@ -51,7 +51,7 @@ class PurgeGuardTest extends TestCase
     {
         $this->environment->method('isProduction')->willReturn(true);
 
-        self::assertNull($this->guard()->blockReasonForUrl('https://www.example.com/tops.html'));
+        $this->assertNull($this->guard()->blockReasonForUrl('https://www.example.com/tops.html'));
     }
 
     public function testANonProductionEnvironmentIsRefusedTheProductionUrl(): void
@@ -60,15 +60,15 @@ class PurgeGuardTest extends TestCase
 
         $reason = $this->guard()->blockReasonForUrl('https://www.example.com/tops.html');
 
-        self::assertNotNull($reason);
-        self::assertStringContainsString('Refusing to purge', (string) $reason);
+        $this->assertNotNull($reason);
+        $this->assertStringContainsString('Refusing to purge', (string) $reason);
     }
 
     public function testANonProductionEnvironmentMayPurgeItsOwnUrl(): void
     {
         $this->environment->method('isProduction')->willReturn(false);
 
-        self::assertNull($this->guard()->blockReasonForUrl('https://stage.example.com/tops.html'));
+        $this->assertNull($this->guard()->blockReasonForUrl('https://stage.example.com/tops.html'));
     }
 
     /**
@@ -79,29 +79,29 @@ class PurgeGuardTest extends TestCase
     {
         $this->environment->method('isProduction')->willReturn(false);
 
-        self::assertNotNull($this->guard()->blockReasonForService(''));
+        $this->assertNotNull($this->guard()->blockReasonForService(''));
     }
 
     public function testANonProductionServiceIsAllowedFromNonProduction(): void
     {
         $this->environment->method('isProduction')->willReturn(false);
 
-        self::assertNull($this->guard()->blockReasonForService('example-stage-html'));
+        $this->assertNull($this->guard()->blockReasonForService('example-stage-html'));
     }
 
     public function testTheProductionServiceIsRefusedFromNonProduction(): void
     {
         $this->environment->method('isProduction')->willReturn(false);
 
-        self::assertNotNull($this->guard()->blockReasonForService('www.example.com'));
+        $this->assertNotNull($this->guard()->blockReasonForService('www.example.com'));
     }
 
     public function testProductionIsNeverBlocked(): void
     {
         $this->environment->method('isProduction')->willReturn(true);
 
-        self::assertNull($this->guard()->blockReasonForService('www.example.com'));
-        self::assertNull($this->guard()->blockReasonForService(''));
+        $this->assertNull($this->guard()->blockReasonForService('www.example.com'));
+        $this->assertNull($this->guard()->blockReasonForService(''));
     }
 
     /**
@@ -112,7 +112,7 @@ class PurgeGuardTest extends TestCase
     {
         $this->environment->method('isProduction')->willReturn(false);
 
-        self::assertInstanceOf(
+        $this->assertInstanceOf(
             \Magento\Framework\Phrase::class,
             $this->guard()->blockReasonForService('www.example.com')
         );

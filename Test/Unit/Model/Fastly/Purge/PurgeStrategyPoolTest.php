@@ -19,7 +19,7 @@ use stdClass;
  * A di.xml array argument is unchecked, so the pool validates its own contents
  * at construction.
  */
-final class PurgeStrategyPoolTest extends TestCase
+class PurgeStrategyPoolTest extends TestCase
 {
     private RecordingLogger $logger;
 
@@ -34,14 +34,14 @@ final class PurgeStrategyPoolTest extends TestCase
 
         $pool = $this->pool('surrogate', ['surrogate' => $surrogate, 'url' => $this->strategy()]);
 
-        self::assertSame($surrogate, $pool->get());
+        $this->assertSame($surrogate, $pool->get());
     }
 
     public function testAnUnregisteredCodeReturnsNullRatherThanGuessing(): void
     {
         $pool = $this->pool('typo', ['surrogate' => $this->strategy()]);
 
-        self::assertNull($pool->get());
+        $this->assertNull($pool->get());
     }
 
     /**
@@ -52,16 +52,16 @@ final class PurgeStrategyPoolTest extends TestCase
     {
         $this->pool('typo', ['surrogate' => $this->strategy(), 'url' => $this->strategy()])->get();
 
-        self::assertCount(1, $this->logger->errors);
-        self::assertStringContainsString('"typo"', $this->logger->errors[0]);
-        self::assertStringContainsString('surrogate, url', $this->logger->errors[0]);
+        $this->assertCount(1, $this->logger->errors);
+        $this->assertStringContainsString('"typo"', $this->logger->errors[0]);
+        $this->assertStringContainsString('surrogate, url', $this->logger->errors[0]);
     }
 
     public function testAnEmptyPoolSaysSoRatherThanListingNothing(): void
     {
         $this->pool('surrogate', [])->get();
 
-        self::assertStringContainsString('(none)', $this->logger->errors[0]);
+        $this->assertStringContainsString('(none)', $this->logger->errors[0]);
     }
 
     /**
@@ -83,10 +83,10 @@ final class PurgeStrategyPoolTest extends TestCase
     {
         try {
             new PurgeStrategyPool($this->createMock(Config::class), $this->logger, ['broken' => 'a string']);
-            self::fail('A string is not a purge strategy.');
+            $this->fail('A string is not a purge strategy.');
         } catch (InvalidArgumentException $e) {
-            self::assertStringContainsString('string', $e->getMessage());
-            self::assertStringContainsString(PurgeStrategyInterface::class, $e->getMessage());
+            $this->assertStringContainsString('string', $e->getMessage());
+            $this->assertStringContainsString(PurgeStrategyInterface::class, $e->getMessage());
         }
     }
 
@@ -94,12 +94,12 @@ final class PurgeStrategyPoolTest extends TestCase
     {
         $pool = $this->pool('surrogate', ['surrogate' => $this->strategy(), 'url' => $this->strategy()]);
 
-        self::assertSame(['surrogate', 'url'], $pool->getAvailableCodes());
+        $this->assertSame(['surrogate', 'url'], $pool->getAvailableCodes());
     }
 
     public function testAnEmptyPoolHasNoAvailableCodes(): void
     {
-        self::assertSame([], $this->pool('surrogate', [])->getAvailableCodes());
+        $this->assertSame([], $this->pool('surrogate', [])->getAvailableCodes());
     }
 
     /**

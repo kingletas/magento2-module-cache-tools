@@ -16,7 +16,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-final class VarnishHealthCheckTest extends TestCase
+class VarnishHealthCheckTest extends TestCase
 {
     /** @var string[] */
     private array $fetched = [];
@@ -47,11 +47,11 @@ final class VarnishHealthCheckTest extends TestCase
     {
         $result = $this->check()->check('https://shop.test/scrub-top.html');
 
-        self::assertTrue($result->reachable);
-        self::assertSame(200, $result->httpStatus);
-        self::assertSame(HealthResult::STATE_HIT, $result->cacheState);
-        self::assertSame(120, $result->age);
-        self::assertSame('cache-lhr-1', $result->servedBy);
+        $this->assertTrue($result->reachable);
+        $this->assertSame(200, $result->httpStatus);
+        $this->assertSame(HealthResult::STATE_HIT, $result->cacheState);
+        $this->assertSame(120, $result->age);
+        $this->assertSame('cache-lhr-1', $result->servedBy);
     }
 
     /**
@@ -63,9 +63,9 @@ final class VarnishHealthCheckTest extends TestCase
 
         $result = $this->check()->check('https://shop.test/a.html');
 
-        self::assertSame(HealthResult::STATE_HIT, $result->cacheState);
-        self::assertSame(30, $result->age);
-        self::assertSame('cache-lhr-2', $result->servedBy);
+        $this->assertSame(HealthResult::STATE_HIT, $result->cacheState);
+        $this->assertSame(30, $result->age);
+        $this->assertSame('cache-lhr-2', $result->servedBy);
     }
 
     /**
@@ -76,16 +76,16 @@ final class VarnishHealthCheckTest extends TestCase
     {
         $this->responseHeaders['X-Cache'] = 'MISS, HIT';
 
-        self::assertSame(HealthResult::STATE_HIT, $this->check()->check('https://shop.test/a.html')->cacheState);
+        $this->assertSame(HealthResult::STATE_HIT, $this->check()->check('https://shop.test/a.html')->cacheState);
     }
 
     public function testAMissAndAPassAreReportedAsThemselves(): void
     {
         $this->responseHeaders['X-Cache'] = 'MISS';
-        self::assertSame(HealthResult::STATE_MISS, $this->check()->check('https://shop.test/a.html')->cacheState);
+        $this->assertSame(HealthResult::STATE_MISS, $this->check()->check('https://shop.test/a.html')->cacheState);
 
         $this->responseHeaders['X-Cache'] = 'PASS';
-        self::assertSame(HealthResult::STATE_PASS, $this->check()->check('https://shop.test/a.html')->cacheState);
+        $this->assertSame(HealthResult::STATE_PASS, $this->check()->check('https://shop.test/a.html')->cacheState);
     }
 
     /**
@@ -98,9 +98,9 @@ final class VarnishHealthCheckTest extends TestCase
 
         $result = $this->check()->check('https://shop.test/a.html');
 
-        self::assertSame(HealthResult::STATE_UNKNOWN, $result->cacheState);
-        self::assertNull($result->age);
-        self::assertNull($result->servedBy);
+        $this->assertSame(HealthResult::STATE_UNKNOWN, $result->cacheState);
+        $this->assertNull($result->age);
+        $this->assertNull($result->servedBy);
     }
 
     /**
@@ -111,7 +111,7 @@ final class VarnishHealthCheckTest extends TestCase
     {
         $this->responseHeaders['X-Cache'] = ['MISS', 'HIT'];
 
-        self::assertSame(HealthResult::STATE_HIT, $this->check()->check('https://shop.test/a.html')->cacheState);
+        $this->assertSame(HealthResult::STATE_HIT, $this->check()->check('https://shop.test/a.html')->cacheState);
     }
 
     /**
@@ -122,8 +122,8 @@ final class VarnishHealthCheckTest extends TestCase
     {
         $this->check()->check('https://shop.test/a.html');
 
-        self::assertNotNull($this->timeout);
-        self::assertGreaterThan(0, $this->timeout);
+        $this->assertNotNull($this->timeout);
+        $this->assertGreaterThan(0, $this->timeout);
     }
 
     /**
@@ -134,9 +134,9 @@ final class VarnishHealthCheckTest extends TestCase
     {
         $result = $this->check()->check('not a url');
 
-        self::assertFalse($result->reachable);
-        self::assertSame([], $this->fetched);
-        self::assertStringContainsString('not a valid URL', (string) $result->error);
+        $this->assertFalse($result->reachable);
+        $this->assertSame([], $this->fetched);
+        $this->assertStringContainsString('not a valid URL', (string) $result->error);
     }
 
     /**
@@ -149,9 +149,9 @@ final class VarnishHealthCheckTest extends TestCase
 
         $result = $this->check()->check('https://shop.test/a.html');
 
-        self::assertFalse($result->reachable);
-        self::assertStringContainsString('Connection timed out', (string) $result->error);
-        self::assertCount(1, $this->logger->warnings);
+        $this->assertFalse($result->reachable);
+        $this->assertStringContainsString('Connection timed out', (string) $result->error);
+        $this->assertCount(1, $this->logger->warnings);
     }
 
     /**
@@ -164,8 +164,8 @@ final class VarnishHealthCheckTest extends TestCase
 
         $result = $this->check()->check('https://shop.test/a.html');
 
-        self::assertTrue($result->reachable);
-        self::assertSame(503, $result->httpStatus);
+        $this->assertTrue($result->reachable);
+        $this->assertSame(503, $result->httpStatus);
     }
 
     private function check(): VarnishHealthCheck

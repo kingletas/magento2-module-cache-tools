@@ -14,7 +14,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-final class RewarmPublisherTest extends TestCase
+class RewarmPublisherTest extends TestCase
 {
     /** @var array<int, array{topic: string, url: string}> */
     private array $published = [];
@@ -37,7 +37,7 @@ final class RewarmPublisherTest extends TestCase
     {
         $this->publisher()->publish('https://shop.test/scrub-top.html');
 
-        self::assertSame(
+        $this->assertSame(
             [['topic' => RewarmPublisher::DEFAULT_TOPIC, 'url' => 'https://shop.test/scrub-top.html']],
             $this->published
         );
@@ -47,7 +47,7 @@ final class RewarmPublisherTest extends TestCase
     {
         $this->publisher('acme.cachetools.rewarm')->publish('https://shop.test/x');
 
-        self::assertSame('acme.cachetools.rewarm', $this->published[0]['topic']);
+        $this->assertSame('acme.cachetools.rewarm', $this->published[0]['topic']);
     }
 
     /**
@@ -61,7 +61,7 @@ final class RewarmPublisherTest extends TestCase
         $publisher->publish('');
         $publisher->publish('   ');
 
-        self::assertSame([], $this->published);
+        $this->assertSame([], $this->published);
     }
 
     /**
@@ -73,8 +73,8 @@ final class RewarmPublisherTest extends TestCase
 
         $this->publisher()->publish('https://shop.test/scrub-top.html');
 
-        self::assertCount(1, $this->logger->warnings);
-        self::assertStringContainsString('https://shop.test/scrub-top.html', $this->logger->warnings[0]);
+        $this->assertCount(1, $this->logger->warnings);
+        $this->assertStringContainsString('https://shop.test/scrub-top.html', $this->logger->warnings[0]);
     }
 
     /**
@@ -87,7 +87,7 @@ final class RewarmPublisherTest extends TestCase
 
         $this->publisher()->publish('https://shop.test/scrub-top.html');
 
-        self::assertSame([], $this->logger->errors);
+        $this->assertSame([], $this->logger->errors);
     }
 
     private function publisher(string $topic = RewarmPublisher::DEFAULT_TOPIC): RewarmPublisher

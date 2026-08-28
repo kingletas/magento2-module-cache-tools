@@ -21,7 +21,7 @@ use Magento\Framework\Stdlib\DateTime\DateTime;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-final class WarmRunTrackerTest extends TestCase
+class WarmRunTrackerTest extends TestCase
 {
     private const NOW = '2026-08-26 12:00:00';
 
@@ -62,11 +62,11 @@ final class WarmRunTrackerTest extends TestCase
      */
     public function testAnOpenRunOfTheSameTypeIsReportedFromTheResource(): void
     {
-        self::assertTrue($this->tracker()->hasOpenRun('product'));
+        $this->assertTrue($this->tracker()->hasOpenRun('product'));
 
         $this->hasOpen = false;
 
-        self::assertFalse($this->tracker()->hasOpenRun('product'));
+        $this->assertFalse($this->tracker()->hasOpenRun('product'));
     }
 
     public function testOpeningARunRecordsItsTypeTotalAndStartTime(): void
@@ -74,10 +74,10 @@ final class WarmRunTrackerTest extends TestCase
         $this->tracker()->open('product', 500);
 
         $row = $this->saved[0];
-        self::assertSame('product', $row[WarmRunInterface::WARM_TYPE]);
-        self::assertSame(WarmRunInterface::STATUS_RUNNING, $row[WarmRunInterface::STATUS]);
-        self::assertSame(500, $row[WarmRunInterface::TOTAL_PRODUCTS]);
-        self::assertSame(self::NOW, $row[WarmRunInterface::STARTED_AT]);
+        $this->assertSame('product', $row[WarmRunInterface::WARM_TYPE]);
+        $this->assertSame(WarmRunInterface::STATUS_RUNNING, $row[WarmRunInterface::STATUS]);
+        $this->assertSame(500, $row[WarmRunInterface::TOTAL_PRODUCTS]);
+        $this->assertSame(self::NOW, $row[WarmRunInterface::STARTED_AT]);
     }
 
     /**
@@ -88,8 +88,8 @@ final class WarmRunTrackerTest extends TestCase
     {
         $this->tracker()->open('product', 500);
 
-        self::assertSame(0, $this->saved[0][WarmRunInterface::PROCESSED_PRODUCTS]);
-        self::assertSame(0, $this->saved[0][WarmRunInterface::FAILED_PRODUCTS]);
+        $this->assertSame(0, $this->saved[0][WarmRunInterface::PROCESSED_PRODUCTS]);
+        $this->assertSame(0, $this->saved[0][WarmRunInterface::FAILED_PRODUCTS]);
     }
 
     /**
@@ -98,7 +98,7 @@ final class WarmRunTrackerTest extends TestCase
      */
     public function testTheNewRunsIdIsReturned(): void
     {
-        self::assertSame(7, $this->tracker()->open('product', 500));
+        $this->assertSame(7, $this->tracker()->open('product', 500));
     }
 
     /**
@@ -109,9 +109,9 @@ final class WarmRunTrackerTest extends TestCase
     {
         $this->tracker()->open('product', 500);
 
-        self::assertCount(1, $this->logger->infos);
-        self::assertStringContainsString('#7', $this->logger->infos[0]);
-        self::assertStringContainsString('product', $this->logger->infos[0]);
+        $this->assertCount(1, $this->logger->infos);
+        $this->assertStringContainsString('#7', $this->logger->infos[0]);
+        $this->assertStringContainsString('product', $this->logger->infos[0]);
     }
 
     /**
@@ -122,14 +122,14 @@ final class WarmRunTrackerTest extends TestCase
     {
         $this->tracker()->incrementProgress(7, 10, 2);
 
-        self::assertSame([['runId' => 7, 'processed' => 10, 'failed' => 2]], $this->increments);
+        $this->assertSame([['runId' => 7, 'processed' => 10, 'failed' => 2]], $this->increments);
     }
 
     public function testCompletionIsDelegatedAndReported(): void
     {
-        self::assertTrue($this->tracker()->completeIfDone(7));
-        self::assertCount(1, $this->logger->infos);
-        self::assertStringContainsString('#7 completed', $this->logger->infos[0]);
+        $this->assertTrue($this->tracker()->completeIfDone(7));
+        $this->assertCount(1, $this->logger->infos);
+        $this->assertStringContainsString('#7 completed', $this->logger->infos[0]);
     }
 
     /**
@@ -140,8 +140,8 @@ final class WarmRunTrackerTest extends TestCase
     {
         $this->completes = false;
 
-        self::assertFalse($this->tracker()->completeIfDone(7));
-        self::assertSame([], $this->logger->infos);
+        $this->assertFalse($this->tracker()->completeIfDone(7));
+        $this->assertSame([], $this->logger->infos);
     }
 
     public function testOpenRunsAreListedOldestFirst(): void
@@ -150,8 +150,8 @@ final class WarmRunTrackerTest extends TestCase
 
         $runs = $this->tracker()->getOpenRuns();
 
-        self::assertCount(2, $runs);
-        self::assertSame(
+        $this->assertCount(2, $runs);
+        $this->assertSame(
             [['field' => WarmRunInterface::RUN_ID, 'direction' => 'ASC']],
             $this->orders
         );
@@ -161,7 +161,7 @@ final class WarmRunTrackerTest extends TestCase
     {
         $this->tracker()->getOpenRuns();
 
-        self::assertSame(
+        $this->assertSame(
             [['field' => WarmRunInterface::STATUS, 'condition' => WarmRunInterface::STATUS_RUNNING]],
             $this->filters
         );
@@ -169,7 +169,7 @@ final class WarmRunTrackerTest extends TestCase
 
     public function testAnInstallWithNoOpenRunsListsNothing(): void
     {
-        self::assertSame([], $this->tracker()->getOpenRuns());
+        $this->assertSame([], $this->tracker()->getOpenRuns());
     }
 
     private function runWithId(int $id): WarmRun

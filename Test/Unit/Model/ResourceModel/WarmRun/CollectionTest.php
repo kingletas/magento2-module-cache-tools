@@ -19,14 +19,14 @@ use ReflectionMethod;
  * The real constructor builds a SELECT through the object manager, which a unit
  * test does not have.
  */
-final class CollectionTest extends TestCase
+class CollectionTest extends TestCase
 {
     public function testTheCollectionIsWiredToTheEntityAndItsResource(): void
     {
         $collection = $this->collection();
 
-        self::assertSame(WarmRun::class, $collection->getModelName());
-        self::assertSame(WarmRunResource::class, $collection->getResourceModelName());
+        $this->assertSame(WarmRun::class, $collection->getModelName());
+        $this->assertSame(WarmRunResource::class, $collection->getResourceModelName());
     }
 
     /**
@@ -34,12 +34,12 @@ final class CollectionTest extends TestCase
      */
     public function testTheIdFieldIsSetThroughTheSetter(): void
     {
-        self::assertSame(WarmRunInterface::RUN_ID, $this->collection()->getIdFieldName());
+        $this->assertSame(WarmRunInterface::RUN_ID, $this->collection()->getIdFieldName());
     }
 
     public function testTheIdFieldIsNotTheFrameworkDefault(): void
     {
-        self::assertNotSame('id', $this->collection()->getIdFieldName());
+        $this->assertNotSame('id', $this->collection()->getIdFieldName());
     }
 
     private function collection(): Collection

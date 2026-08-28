@@ -22,7 +22,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-final class WarmConsumerTest extends TestCase
+class WarmConsumerTest extends TestCase
 {
     /** @var array<int, array{warmer: string, ids: int[]}> */
     private array $warmed = [];
@@ -59,16 +59,16 @@ final class WarmConsumerTest extends TestCase
     {
         $this->consumer()->process($this->message(7, BatchQueuer::TYPE_SIMPLE, [10, 11]));
 
-        self::assertSame([['warmer' => 'simple', 'ids' => [10, 11]]], $this->warmed);
-        self::assertSame([['runId' => 7, 'processed' => 2, 'failed' => 0]], $this->progress);
-        self::assertSame([7], $this->completions);
+        $this->assertSame([['warmer' => 'simple', 'ids' => [10, 11]]], $this->warmed);
+        $this->assertSame([['runId' => 7, 'processed' => 2, 'failed' => 0]], $this->progress);
+        $this->assertSame([7], $this->completions);
     }
 
     public function testEachTypeGoesToItsOwnWarmer(): void
     {
         $this->consumer()->process($this->message(7, BatchQueuer::TYPE_CONFIGURABLE, [10]));
 
-        self::assertSame('configurable', $this->warmed[0]['warmer']);
+        $this->assertSame('configurable', $this->warmed[0]['warmer']);
     }
 
     /**
@@ -79,7 +79,7 @@ final class WarmConsumerTest extends TestCase
     {
         $this->consumer()->process($this->message(7, BatchQueuer::TYPE_SIMPLE, [10]));
 
-        self::assertSame(['get', 'set:' . Area::AREA_FRONTEND], $this->areaCalls);
+        $this->assertSame(['get', 'set:' . Area::AREA_FRONTEND], $this->areaCalls);
     }
 
     public function testAnAreaThatIsAlreadySetIsLeftAlone(): void
@@ -88,7 +88,7 @@ final class WarmConsumerTest extends TestCase
 
         $this->consumer()->process($this->message(7, BatchQueuer::TYPE_SIMPLE, [10]));
 
-        self::assertSame(['get'], $this->areaCalls);
+        $this->assertSame(['get'], $this->areaCalls);
     }
 
     /**
@@ -101,9 +101,9 @@ final class WarmConsumerTest extends TestCase
         $consumer->process($this->message(7, BatchQueuer::TYPE_SIMPLE, [10, 11]));
         $consumer->process($this->message(7, BatchQueuer::TYPE_SIMPLE, [12, 13]));
 
-        self::assertCount(2, $this->lock->taken);
-        self::assertNotSame($this->lock->taken[0], $this->lock->taken[1]);
-        self::assertStringContainsString('7', $this->lock->taken[0]);
+        $this->assertCount(2, $this->lock->taken);
+        $this->assertNotSame($this->lock->taken[0], $this->lock->taken[1]);
+        $this->assertStringContainsString('7', $this->lock->taken[0]);
     }
 
     /**
@@ -121,9 +121,9 @@ final class WarmConsumerTest extends TestCase
 
         $consumer->process($message);
 
-        self::assertSame([], $this->warmed);
-        self::assertCount(1, $this->logger->warnings);
-        self::assertStringContainsString('will not reach its total', $this->logger->warnings[0]);
+        $this->assertSame([], $this->warmed);
+        $this->assertCount(1, $this->logger->warnings);
+        $this->assertStringContainsString('will not reach its total', $this->logger->warnings[0]);
     }
 
     /**
@@ -136,8 +136,8 @@ final class WarmConsumerTest extends TestCase
 
         $this->consumer()->process($this->message(7, BatchQueuer::TYPE_SIMPLE, [10, 11]));
 
-        self::assertSame([['runId' => 7, 'processed' => 2, 'failed' => 2]], $this->progress);
-        self::assertCount(1, $this->logger->errors);
+        $this->assertSame([['runId' => 7, 'processed' => 2, 'failed' => 2]], $this->progress);
+        $this->assertCount(1, $this->logger->errors);
     }
 
     /**
@@ -150,7 +150,7 @@ final class WarmConsumerTest extends TestCase
 
         $this->consumer()->process($this->message(7, BatchQueuer::TYPE_SIMPLE, [10]));
 
-        self::assertSame([7], $this->completions);
+        $this->assertSame([7], $this->completions);
     }
 
     public function testPerProductFailuresAreReportedAgainstTheRun(): void
@@ -159,17 +159,17 @@ final class WarmConsumerTest extends TestCase
 
         $this->consumer()->process($this->message(7, BatchQueuer::TYPE_SIMPLE, [10, 11]));
 
-        self::assertSame([['runId' => 7, 'processed' => 2, 'failed' => 1]], $this->progress);
-        self::assertCount(1, $this->logger->warnings);
-        self::assertStringContainsString('SKU-2', $this->logger->warnings[0]);
+        $this->assertSame([['runId' => 7, 'processed' => 2, 'failed' => 1]], $this->progress);
+        $this->assertCount(1, $this->logger->warnings);
+        $this->assertStringContainsString('SKU-2', $this->logger->warnings[0]);
     }
 
     public function testEveryBatchLeavesATraceOfWhatItWarmed(): void
     {
         $this->consumer()->process($this->message(7, BatchQueuer::TYPE_SIMPLE, [10, 11]));
 
-        self::assertCount(1, $this->logger->infos);
-        self::assertStringContainsString('warmed 2 of 2', $this->logger->infos[0]);
+        $this->assertCount(1, $this->logger->infos);
+        $this->assertStringContainsString('warmed 2 of 2', $this->logger->infos[0]);
     }
 
     /**
@@ -180,8 +180,8 @@ final class WarmConsumerTest extends TestCase
     {
         $this->consumer()->process('{not json');
 
-        self::assertSame([], $this->warmed);
-        self::assertCount(1, $this->logger->warnings);
+        $this->assertSame([], $this->warmed);
+        $this->assertCount(1, $this->logger->warnings);
     }
 
     public function testAMessageMissingAnyOfItsPartsIsDiscarded(): void
@@ -193,8 +193,8 @@ final class WarmConsumerTest extends TestCase
         $consumer->process($this->message(7, BatchQueuer::TYPE_SIMPLE, []));
         $consumer->process('"just a string"');
 
-        self::assertSame([], $this->warmed);
-        self::assertCount(4, $this->logger->warnings);
+        $this->assertSame([], $this->warmed);
+        $this->assertCount(4, $this->logger->warnings);
     }
 
     /**
@@ -211,7 +211,7 @@ final class WarmConsumerTest extends TestCase
             ])
         );
 
-        self::assertSame([10, 11], $this->warmed[0]['ids']);
+        $this->assertSame([10, 11], $this->warmed[0]['ids']);
     }
 
     /**

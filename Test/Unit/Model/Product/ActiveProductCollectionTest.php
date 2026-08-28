@@ -17,7 +17,7 @@ use Magento\ConfigurableProduct\Model\Product\Type\Configurable as ConfigurableT
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-final class ActiveProductCollectionTest extends TestCase
+class ActiveProductCollectionTest extends TestCase
 {
     /** @var array<int, array{field: mixed, condition: mixed}> */
     private array $fieldFilters = [];
@@ -39,7 +39,7 @@ final class ActiveProductCollectionTest extends TestCase
     {
         $this->collection()->forSimple();
 
-        self::assertSame(
+        $this->assertSame(
             [['field' => 'type_id', 'condition' => ProductType::TYPE_SIMPLE]],
             $this->fieldFilters
         );
@@ -49,7 +49,7 @@ final class ActiveProductCollectionTest extends TestCase
     {
         $this->collection()->forConfigurable();
 
-        self::assertSame(
+        $this->assertSame(
             [['field' => 'type_id', 'condition' => ConfigurableType::TYPE_CODE]],
             $this->fieldFilters
         );
@@ -63,7 +63,7 @@ final class ActiveProductCollectionTest extends TestCase
     {
         $this->collection()->forSimple();
 
-        self::assertContains(
+        $this->assertContains(
             ['field' => 'status', 'condition' => Status::STATUS_ENABLED],
             $this->attributeFilters
         );
@@ -76,7 +76,7 @@ final class ActiveProductCollectionTest extends TestCase
     {
         $this->collection()->forSimple();
 
-        self::assertContains(
+        $this->assertContains(
             ['field' => 'visibility', 'condition' => ['neq' => Visibility::VISIBILITY_NOT_VISIBLE]],
             $this->attributeFilters
         );
@@ -90,8 +90,8 @@ final class ActiveProductCollectionTest extends TestCase
     {
         $this->collection()->forIds(ProductType::TYPE_SIMPLE, [10, 11]);
 
-        self::assertSame([[10, 11]], $this->idFilters);
-        self::assertContains(
+        $this->assertSame([[10, 11]], $this->idFilters);
+        $this->assertContains(
             ['field' => 'status', 'condition' => Status::STATUS_ENABLED],
             $this->attributeFilters
         );

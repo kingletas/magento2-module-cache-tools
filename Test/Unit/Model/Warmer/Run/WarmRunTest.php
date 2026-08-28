@@ -15,7 +15,7 @@ use Magento\Framework\Registry;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
 
-final class WarmRunTest extends TestCase
+class WarmRunTest extends TestCase
 {
     /**
      * Read off the declared name rather than the injected instance: a mis-wired
@@ -25,12 +25,12 @@ final class WarmRunTest extends TestCase
     {
         $declared = (new ReflectionProperty(WarmRun::class, '_resourceName'))->getValue($this->entity());
 
-        self::assertSame(WarmRunResource::class, $declared);
+        $this->assertSame(WarmRunResource::class, $declared);
     }
 
     public function testTheEntityIsKeyedOnTheRunId(): void
     {
-        self::assertSame(WarmRunInterface::RUN_ID, $this->entity()->getIdFieldName());
+        $this->assertSame(WarmRunInterface::RUN_ID, $this->entity()->getIdFieldName());
     }
 
     public function testEveryFieldIsReadBackWithADefiniteType(): void
@@ -43,31 +43,31 @@ final class WarmRunTest extends TestCase
         $run->setData(WarmRunInterface::PROCESSED_PRODUCTS, '40');
         $run->setData(WarmRunInterface::FAILED_PRODUCTS, '2');
 
-        self::assertSame(5, $run->getRunId());
-        self::assertSame('product', $run->getWarmType());
-        self::assertSame(WarmRunInterface::STATUS_RUNNING, $run->getStatus());
-        self::assertSame(100, $run->getTotalProducts());
-        self::assertSame(40, $run->getProcessedProducts());
-        self::assertSame(2, $run->getFailedProducts());
+        $this->assertSame(5, $run->getRunId());
+        $this->assertSame('product', $run->getWarmType());
+        $this->assertSame(WarmRunInterface::STATUS_RUNNING, $run->getStatus());
+        $this->assertSame(100, $run->getTotalProducts());
+        $this->assertSame(40, $run->getProcessedProducts());
+        $this->assertSame(2, $run->getFailedProducts());
     }
 
     public function testAnUnsavedRunHasNoIdRatherThanZero(): void
     {
-        self::assertNull($this->entity()->getRunId());
+        $this->assertNull($this->entity()->getRunId());
     }
 
     public function testOnlyARunningRunIsRunning(): void
     {
-        self::assertTrue($this->runWithStatus(WarmRunInterface::STATUS_RUNNING)->isRunning());
-        self::assertFalse($this->runWithStatus(WarmRunInterface::STATUS_COMPLETE)->isRunning());
-        self::assertFalse($this->runWithStatus(WarmRunInterface::STATUS_STALE)->isRunning());
+        $this->assertTrue($this->runWithStatus(WarmRunInterface::STATUS_RUNNING)->isRunning());
+        $this->assertFalse($this->runWithStatus(WarmRunInterface::STATUS_COMPLETE)->isRunning());
+        $this->assertFalse($this->runWithStatus(WarmRunInterface::STATUS_STALE)->isRunning());
     }
 
     public function testProgressIsThePercentageProcessed(): void
     {
-        self::assertSame(40, $this->progressFor(100, 40));
-        self::assertSame(100, $this->progressFor(100, 100));
-        self::assertSame(0, $this->progressFor(100, 0));
+        $this->assertSame(40, $this->progressFor(100, 40));
+        $this->assertSame(100, $this->progressFor(100, 100));
+        $this->assertSame(0, $this->progressFor(100, 0));
     }
 
     /**
@@ -76,7 +76,7 @@ final class WarmRunTest extends TestCase
      */
     public function testARunWithNothingToDoIsAlreadyComplete(): void
     {
-        self::assertSame(100, $this->progressFor(0, 0));
+        $this->assertSame(100, $this->progressFor(0, 0));
     }
 
     /**
@@ -84,7 +84,7 @@ final class WarmRunTest extends TestCase
      */
     public function testProgressIsCappedAtOneHundred(): void
     {
-        self::assertSame(100, $this->progressFor(100, 140));
+        $this->assertSame(100, $this->progressFor(100, 140));
     }
 
     /**
@@ -92,7 +92,7 @@ final class WarmRunTest extends TestCase
      */
     public function testANonsensicalTotalReadsAsComplete(): void
     {
-        self::assertSame(100, $this->progressFor(-5, 0));
+        $this->assertSame(100, $this->progressFor(-5, 0));
     }
 
     private function progressFor(int $total, int $processed): int

@@ -15,7 +15,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
-final class HealthCheckCommandTest extends TestCase
+class HealthCheckCommandTest extends TestCase
 {
     /** @var array<string, HealthResult> */
     private array $results = [];
@@ -38,7 +38,7 @@ final class HealthCheckCommandTest extends TestCase
 
         $this->tester()->execute(['urls' => array_keys($this->results)]);
 
-        self::assertSame(array_keys($this->results), $this->probed);
+        $this->assertSame(array_keys($this->results), $this->probed);
     }
 
     /**
@@ -52,9 +52,9 @@ final class HealthCheckCommandTest extends TestCase
         $tester = $this->tester();
         $tester->execute(['urls' => ['https://shop.test/a.html']]);
 
-        self::assertStringContainsString('HIT', $tester->getDisplay());
-        self::assertStringContainsString('120s', $tester->getDisplay());
-        self::assertStringContainsString('cache-lhr-1', $tester->getDisplay());
+        $this->assertStringContainsString('HIT', $tester->getDisplay());
+        $this->assertStringContainsString('120s', $tester->getDisplay());
+        $this->assertStringContainsString('cache-lhr-1', $tester->getDisplay());
     }
 
     /**
@@ -71,9 +71,9 @@ final class HealthCheckCommandTest extends TestCase
 
         $tester = $this->tester();
 
-        self::assertSame(Command::FAILURE, $tester->execute(['urls' => ['https://shop.test/a.html']]));
-        self::assertStringContainsString('unreachable', $tester->getDisplay());
-        self::assertStringContainsString('Connection timed out', $tester->getDisplay());
+        $this->assertSame(Command::FAILURE, $tester->execute(['urls' => ['https://shop.test/a.html']]));
+        $this->assertStringContainsString('unreachable', $tester->getDisplay());
+        $this->assertStringContainsString('Connection timed out', $tester->getDisplay());
     }
 
     /**
@@ -84,7 +84,7 @@ final class HealthCheckCommandTest extends TestCase
     {
         $this->results = ['https://shop.test/a.html' => $this->hit('https://shop.test/a.html')];
 
-        self::assertSame(Command::SUCCESS, $this->tester()->execute(['urls' => ['https://shop.test/a.html']]));
+        $this->assertSame(Command::SUCCESS, $this->tester()->execute(['urls' => ['https://shop.test/a.html']]));
     }
 
     /**
@@ -102,8 +102,8 @@ final class HealthCheckCommandTest extends TestCase
 
         $tester = $this->tester();
 
-        self::assertSame(Command::SUCCESS, $tester->execute(['urls' => ['https://shop.test/a.html']]));
-        self::assertStringContainsString(HealthResult::STATE_MISS, $tester->getDisplay());
+        $this->assertSame(Command::SUCCESS, $tester->execute(['urls' => ['https://shop.test/a.html']]));
+        $this->assertStringContainsString(HealthResult::STATE_MISS, $tester->getDisplay());
     }
 
     /**
@@ -123,9 +123,9 @@ final class HealthCheckCommandTest extends TestCase
 
         $tester = $this->tester();
 
-        self::assertSame(Command::FAILURE, $tester->execute(['urls' => array_keys($this->results)]));
-        self::assertStringContainsString('a.html', $tester->getDisplay());
-        self::assertStringContainsString('b.html', $tester->getDisplay());
+        $this->assertSame(Command::FAILURE, $tester->execute(['urls' => array_keys($this->results)]));
+        $this->assertStringContainsString('a.html', $tester->getDisplay());
+        $this->assertStringContainsString('b.html', $tester->getDisplay());
     }
 
     /**
@@ -144,7 +144,7 @@ final class HealthCheckCommandTest extends TestCase
         $tester = $this->tester();
         $tester->execute(['urls' => ['https://shop.test/a.html']]);
 
-        self::assertStringNotContainsString('0s', $tester->getDisplay());
+        $this->assertStringNotContainsString('0s', $tester->getDisplay());
     }
 
     private function hit(string $url): HealthResult
