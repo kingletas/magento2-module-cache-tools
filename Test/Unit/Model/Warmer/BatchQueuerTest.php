@@ -12,7 +12,7 @@ use Commerce\CacheTools\Model\Product\ActiveProductCollection;
 use Commerce\CacheTools\Model\Warmer\BatchQueuer;
 use Commerce\CacheTools\Model\Warmer\Publisher;
 use Commerce\CacheTools\Model\Warmer\Run\WarmRunTracker;
-use Commerce\CacheTools\Test\Unit\Fake\PassthroughLock;
+use Commerce\CacheTools\Test\Support\PassthroughLock;
 use InvalidArgumentException;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
 use PHPUnit\Framework\MockObject\MockObject;

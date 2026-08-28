@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace Commerce\CacheTools\Test\Unit\Fake;
+namespace Commerce\CacheTools\Test\Support;
 
 use Commerce\CacheTools\Lock\WarmLock;
 

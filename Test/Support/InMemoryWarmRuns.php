@@ -8,7 +8,7 @@
  */
 declare(strict_types=1);
 
-namespace Commerce\CacheTools\Test\Behaviour\Fake;
+namespace Commerce\CacheTools\Test\Support;
 
 use Commerce\CacheTools\Api\Data\WarmRunInterface;
 use Commerce\CacheTools\Model\ResourceModel\WarmRun as WarmRunResource;

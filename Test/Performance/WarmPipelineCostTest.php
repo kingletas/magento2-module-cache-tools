@@ -21,7 +21,7 @@ use Commerce\CacheTools\Model\Warmer\Run\WarmRunFactory;
 use Commerce\CacheTools\Model\Warmer\Run\WarmRunTracker;
 use Commerce\CacheTools\Model\Warmer\WarmResult;
 use Commerce\CacheTools\Queue\WarmConsumer;
-use Commerce\CacheTools\Test\Behaviour\Fake\InMemoryWarmRuns;
+use Commerce\CacheTools\Test\Support\InMemoryWarmRuns;
 use Commerce\Foundation\Test\Support\BudgetAssertions;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;

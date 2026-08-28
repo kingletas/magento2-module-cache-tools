@@ -12,7 +12,7 @@ use Commerce\CacheTools\Model\Warmer\BatchQueuer;
 use Commerce\CacheTools\Model\Warmer\Run\WarmRunTracker;
 use Commerce\CacheTools\Model\Warmer\WarmResult;
 use Commerce\CacheTools\Queue\WarmConsumer;
-use Commerce\CacheTools\Test\Unit\Fake\PassthroughLock;
+use Commerce\CacheTools\Test\Support\PassthroughLock;
 use Magento\Framework\App\Area;
 use Magento\Framework\App\State;
 use Magento\Framework\Exception\LocalizedException;
