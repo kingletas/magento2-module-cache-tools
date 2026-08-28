@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Commerce\CacheTools\Test\Unit\Model;
 
 use Commerce\CacheTools\Model\Config;
-use Commerce\CacheTools\Test\Unit\Fake\ArrayScopeConfig;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\Exception\LocalizedException;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -98,6 +98,22 @@ class ConfigTest extends TestCase
      */
     private function config(array $values, string $section = self::SECTION): Config
     {
-        return new Config(new ArrayScopeConfig($values), $section, $this->encryptor);
+        return new Config($this->scopeConfig($values), $section, $this->encryptor);
+    }
+
+    /**
+     * @param array<string, mixed> $values
+     */
+    private function scopeConfig(array $values): ScopeConfigInterface
+    {
+        $scopeConfig = $this->createMock(ScopeConfigInterface::class);
+        $scopeConfig->method('getValue')->willReturnCallback(
+            static fn (string $path): mixed => $values[$path] ?? null
+        );
+        $scopeConfig->method('isSetFlag')->willReturnCallback(
+            static fn (string $path): bool => !in_array($values[$path] ?? null, [null, '', '0', 0, false], true)
+        );
+
+        return $scopeConfig;
     }
 }

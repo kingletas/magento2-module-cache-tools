@@ -22,9 +22,8 @@ use Commerce\CacheTools\Model\Warmer\Run\WarmRunTracker;
 use Commerce\CacheTools\Model\Warmer\WarmResult;
 use Commerce\CacheTools\Queue\WarmConsumer;
 use Commerce\CacheTools\Test\Behaviour\Fake\InMemoryWarmRuns;
-use Commerce\CacheTools\Test\Unit\Fake\ArrayScopeConfig;
-use Commerce\CacheTools\Test\Unit\Fake\RecordingLogger;
 use Commerce\Foundation\Test\Support\BudgetAssertions;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
 use Magento\Framework\App\State;
 use Magento\Framework\Encryption\EncryptorInterface;
@@ -33,6 +32,7 @@ use Magento\Framework\MessageQueue\PublisherInterface;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 /**
  * What warming a catalogue costs before a single page is fetched.
@@ -45,7 +45,7 @@ class WarmPipelineCostTest extends TestCase
     private const NOW = '2026-08-27 09:00:00';
 
     private InMemoryWarmRuns $runs;
-    private RecordingLogger $logger;
+    private LoggerInterface $logger;
 
     /** @var string[] */
     private array $queue = [];
@@ -59,7 +59,7 @@ class WarmPipelineCostTest extends TestCase
     protected function setUp(): void
     {
         $this->runs = new InMemoryWarmRuns();
-        $this->logger = new RecordingLogger();
+        $this->logger = $this->createMock(LoggerInterface::class);
         $this->queue = [];
         $this->catalogue = [];
         $this->collectionLoads = 0;
@@ -293,7 +293,7 @@ class WarmPipelineCostTest extends TestCase
     private function config(string $batchSize): Config
     {
         return new Config(
-            new ArrayScopeConfig([
+            $this->scopeConfig([
                 self::SECTION . '/warmer/simple_batch_size' => $batchSize,
                 self::SECTION . '/warmer/configurable_batch_size' => $batchSize,
             ]),
@@ -308,5 +308,21 @@ class WarmPipelineCostTest extends TestCase
         $dateTime->method('gmtDate')->willReturn(self::NOW);
 
         return $dateTime;
+    }
+
+    /**
+     * @param array<string, mixed> $values
+     */
+    private function scopeConfig(array $values): ScopeConfigInterface
+    {
+        $scopeConfig = $this->createMock(ScopeConfigInterface::class);
+        $scopeConfig->method('getValue')->willReturnCallback(
+            static fn (string $path): mixed => $values[$path] ?? null
+        );
+        $scopeConfig->method('isSetFlag')->willReturnCallback(
+            static fn (string $path): bool => !in_array($values[$path] ?? null, [null, '', '0', 0, false], true)
+        );
+
+        return $scopeConfig;
     }
 }

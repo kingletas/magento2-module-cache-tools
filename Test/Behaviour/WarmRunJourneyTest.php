@@ -24,8 +24,8 @@ use Commerce\CacheTools\Model\Warmer\Run\WarmRunTracker;
 use Commerce\CacheTools\Model\Warmer\WarmResult;
 use Commerce\CacheTools\Queue\WarmConsumer;
 use Commerce\CacheTools\Test\Behaviour\Fake\InMemoryWarmRuns;
-use Commerce\CacheTools\Test\Unit\Fake\ArrayScopeConfig;
 use Commerce\CacheTools\Test\Unit\Fake\RecordingLogger;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
 use Magento\Framework\App\State;
 use Magento\Framework\Encryption\EncryptorInterface;
@@ -395,7 +395,7 @@ class WarmRunJourneyTest extends TestCase
         // The encryptor is only reached by the Fastly credentials, which
         // nothing in a warm run touches.
         return new Config(
-            new ArrayScopeConfig($this->settings),
+            $this->scopeConfig($this->settings),
             self::SECTION,
             $this->createMock(EncryptorInterface::class)
         );
@@ -423,5 +423,21 @@ class WarmRunJourneyTest extends TestCase
         );
 
         return $dateTime;
+    }
+
+    /**
+     * @param array<string, mixed> $values
+     */
+    private function scopeConfig(array $values): ScopeConfigInterface
+    {
+        $scopeConfig = $this->createMock(ScopeConfigInterface::class);
+        $scopeConfig->method('getValue')->willReturnCallback(
+            static fn (string $path): mixed => $values[$path] ?? null
+        );
+        $scopeConfig->method('isSetFlag')->willReturnCallback(
+            static fn (string $path): bool => !in_array($values[$path] ?? null, [null, '', '0', 0, false], true)
+        );
+
+        return $scopeConfig;
     }
 }
