@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="commerce_cachetools_warm_run" resource="default" engine="innodb"
+           comment="Cache warming runs">
+        <column xsi:type="int" name="run_id" padding="10" unsigned="true"
+                nullable="false" identity="true" comment="Run ID"/>
+        <column xsi:type="varchar" name="warm_type" nullable="false" length="32"
+                comment="Product type being warmed"/>
+        <column xsi:type="varchar" name="status" nullable="false" length="16" default="running"
+                comment="running, complete or stale"/>
+        <column xsi:type="int" name="total_products" padding="10" unsigned="true"
+                nullable="false" default="0" comment="Products queued"/>
+        <column xsi:type="int" name="processed_products" padding="10" unsigned="true"
+                nullable="false" default="0" comment="Products accounted for"/>
+        <column xsi:type="int" name="failed_products" padding="10" unsigned="true"
+                nullable="false" default="0" comment="Products that failed to warm"/>
+        <column xsi:type="timestamp" name="started_at" on_update="false" nullable="false"
+                default="CURRENT_TIMESTAMP" comment="Started At"/>
+        <!-- Touched on every progress increment. -->
+        <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="false"
+                default="CURRENT_TIMESTAMP" comment="Last progress update"/>
+        <column xsi:type="timestamp" name="finished_at" on_update="false" nullable="true"
+                comment="Finished At"/>
+
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="run_id"/>
+        </constraint>
+
+        <!-- Serves both the "is a run of this type open?" check and the grid's default filter. -->
+        <index referenceId="COMMERCE_CACHETOOLS_WARM_RUN_STATUS_WARM_TYPE" indexType="btree">
+            <column name="status"/>
+            <column name="warm_type"/>
+        </index>
+        <!-- Serves the reaper's scan for runs with no recent progress. -->
+        <index referenceId="COMMERCE_CACHETOOLS_WARM_RUN_STATUS_UPDATED_AT" indexType="btree">
+            <column name="status"/>
+            <column name="updated_at"/>
+        </index>
+    </table>
+</schema>

@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Cron/etc/crontab.xsd">
+    <group id="default">
+        <job name="commerce_cachetools_reap_stale_warm_runs"
+             instance="Commerce\CacheTools\Cron\ReapStaleWarmRuns"
+             method="execute">
+            <schedule>17 * * * *</schedule>
+        </job>
+    </group>
+</config>

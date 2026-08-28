@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:MessageQueue/etc/consumer.xsd">
+    <consumer name="commerce.cachetools.warm"
+              queue="commerce.cachetools.warm"
+              connection="amqp"
+              maxMessages="100"
+              handler="Commerce\CacheTools\Queue\WarmConsumer::process"/>
+    <consumer name="commerce.cachetools.rewarm"
+              queue="commerce.cachetools.rewarm"
+              connection="amqp"
+              maxMessages="500"
+              handler="Commerce\CacheTools\Queue\RewarmConsumer::process"/>
+</config>

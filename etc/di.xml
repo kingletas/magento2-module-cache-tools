@@ -1,0 +1,187 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+
+    <!-- Config section id: the one string that has to change when rebranding. -->
+    <type name="Commerce\CacheTools\Model\Config">
+        <arguments>
+            <argument name="section" xsi:type="string">commerce_cachetools</argument>
+        </arguments>
+    </type>
+
+    <!-- Key-pattern purging needs a Redis cache backend. -->
+    <preference for="Commerce\CacheTools\Api\KeyPatternPurgerInterface"
+                type="Commerce\CacheTools\Model\Cache\RedisKeyPatternPurger"/>
+
+    <!-- Swatch warming is store-specific. -->
+    <preference for="Commerce\CacheTools\Api\SwatchCacheWarmerInterface"
+                type="Commerce\CacheTools\Model\Warmer\Task\SwatchRendererWarmer"/>
+
+    <!-- One warm task class, configured twice. -->
+    <virtualType name="Commerce\CacheTools\Model\Warmer\Task\SimpleWarmer"
+                 type="Commerce\CacheTools\Model\Warmer\Task\ProductCacheWarmer">
+        <arguments>
+            <argument name="productType" xsi:type="const">Magento\Catalog\Model\Product\Type::TYPE_SIMPLE</argument>
+            <argument name="warmSwatches" xsi:type="boolean">false</argument>
+            <argument name="loadAttributes" xsi:type="array">
+                <item name="image" xsi:type="string">image</item>
+                <item name="small_image" xsi:type="string">small_image</item>
+                <item name="thumbnail" xsi:type="string">thumbnail</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Commerce\CacheTools\Model\Warmer\Task\ConfigurableWarmer"
+                 type="Commerce\CacheTools\Model\Warmer\Task\ProductCacheWarmer">
+        <arguments>
+            <argument name="productType" xsi:type="const">Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE</argument>
+            <argument name="warmSwatches" xsi:type="boolean">true</argument>
+        </arguments>
+    </virtualType>
+
+    <type name="Commerce\CacheTools\Queue\WarmConsumer">
+        <arguments>
+            <argument name="simpleWarmer" xsi:type="object">Commerce\CacheTools\Model\Warmer\Task\SimpleWarmer</argument>
+            <argument name="configurableWarmer" xsi:type="object">Commerce\CacheTools\Model\Warmer\Task\ConfigurableWarmer</argument>
+            <argument name="logger" xsi:type="object">Commerce\CacheTools\Logger</argument>
+        </arguments>
+    </type>
+
+    <!-- Purge strategies, registered in one place so the config dropdown matches reality. -->
+    <type name="Commerce\CacheTools\Model\Fastly\Purge\PurgeStrategyPool">
+        <arguments>
+            <argument name="strategies" xsi:type="array">
+                <item name="url" xsi:type="object">Commerce\CacheTools\Model\Fastly\Purge\UrlPurgeStrategy</item>
+                <item name="surrogate_key" xsi:type="object">Commerce\CacheTools\Model\Fastly\Purge\SurrogateKeyPurgeStrategy</item>
+            </argument>
+            <argument name="logger" xsi:type="object">Commerce\CacheTools\Logger</argument>
+        </arguments>
+    </type>
+    <type name="Commerce\CacheTools\Model\Source\PurgeStrategy">
+        <arguments>
+            <argument name="labels" xsi:type="array">
+                <item name="url" xsi:type="string">Purge product URLs</item>
+                <item name="surrogate_key" xsi:type="string">Purge surrogate key</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- Console commands. -->
+    <!-- The command name is wiring, so `bin/rebrand` rewrites it with the rest. -->
+    <type name="Commerce\CacheTools\Console\Varnish\HealthCheckCommand">
+        <arguments>
+            <argument name="name" xsi:type="string">commerce:cache-tools:varnish:health</argument>
+        </arguments>
+    </type>
+
+    <!-- The command name is wiring, so `bin/rebrand` rewrites it with the rest. -->
+    <type name="Commerce\CacheTools\Console\Warmer\QueueWarmCommand">
+        <arguments>
+            <argument name="name" xsi:type="string">commerce:cache-tools:warm:queue</argument>
+        </arguments>
+    </type>
+
+    <!-- The command name is wiring, so `bin/rebrand` rewrites it with the rest. -->
+    <type name="Commerce\CacheTools\Console\Warmer\ReapRunsCommand">
+        <arguments>
+            <argument name="name" xsi:type="string">commerce:cache-tools:warm:reap</argument>
+        </arguments>
+    </type>
+
+    <type name="Magento\Framework\Console\CommandListInterface">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="commerce_cachetools_warm_queue" xsi:type="object">Commerce\CacheTools\Console\Warmer\QueueWarmCommand</item>
+                <item name="commerce_cachetools_warm_reap" xsi:type="object">Commerce\CacheTools\Console\Warmer\ReapRunsCommand</item>
+                <item name="commerce_cachetools_varnish_health" xsi:type="object">Commerce\CacheTools\Console\Varnish\HealthCheckCommand</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- Grid data source. -->
+    <virtualType name="Commerce\CacheTools\Model\ResourceModel\WarmRun\Grid\Collection"
+                 type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">commerce_cachetools_warm_run</argument>
+            <argument name="resourceModel" xsi:type="string">Commerce\CacheTools\Model\ResourceModel\WarmRun</argument>
+        </arguments>
+    </virtualType>
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="commerce_cachetools_warm_run_listing_data_source" xsi:type="string">Commerce\CacheTools\Model\ResourceModel\WarmRun\Grid\Collection</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- Everything that logs, on this module's own channel. -->
+    <type name="Commerce\CacheTools\Model\Fastly\Purger">
+        <arguments><argument name="logger" xsi:type="object">Commerce\CacheTools\Logger</argument></arguments>
+    </type>
+    <type name="Commerce\CacheTools\Model\Fastly\PurgeGuard">
+        <arguments><argument name="logger" xsi:type="object">Commerce\CacheTools\Logger</argument></arguments>
+    </type>
+    <type name="Commerce\CacheTools\Model\Fastly\ServiceIdProvider">
+        <arguments><argument name="logger" xsi:type="object">Commerce\CacheTools\Logger</argument></arguments>
+    </type>
+    <type name="Commerce\CacheTools\Model\Fastly\VarnishHealthCheck">
+        <arguments><argument name="logger" xsi:type="object">Commerce\CacheTools\Logger</argument></arguments>
+    </type>
+    <type name="Commerce\CacheTools\Model\Cache\RedisKeyPatternPurger">
+        <arguments><argument name="logger" xsi:type="object">Commerce\CacheTools\Logger</argument></arguments>
+    </type>
+    <type name="Commerce\CacheTools\Model\Cache\NullKeyPatternPurger">
+        <arguments><argument name="logger" xsi:type="object">Commerce\CacheTools\Logger</argument></arguments>
+    </type>
+    <type name="Commerce\CacheTools\Model\Warmer\BatchQueuer">
+        <arguments><argument name="logger" xsi:type="object">Commerce\CacheTools\Logger</argument></arguments>
+    </type>
+    <type name="Commerce\CacheTools\Model\Warmer\Task\ProductCacheWarmer">
+        <arguments><argument name="logger" xsi:type="object">Commerce\CacheTools\Logger</argument></arguments>
+    </type>
+    <type name="Commerce\CacheTools\Model\Warmer\Task\SwatchRendererWarmer">
+        <arguments><argument name="logger" xsi:type="object">Commerce\CacheTools\Logger</argument></arguments>
+    </type>
+    <type name="Commerce\CacheTools\Model\Warmer\Run\WarmRunTracker">
+        <arguments><argument name="logger" xsi:type="object">Commerce\CacheTools\Logger</argument></arguments>
+    </type>
+    <type name="Commerce\CacheTools\Model\Warmer\Run\StaleRunReaper">
+        <arguments><argument name="logger" xsi:type="object">Commerce\CacheTools\Logger</argument></arguments>
+    </type>
+    <type name="Commerce\CacheTools\Model\Warmer\RewarmPublisher">
+        <arguments><argument name="logger" xsi:type="object">Commerce\CacheTools\Logger</argument></arguments>
+    </type>
+    <type name="Commerce\CacheTools\Model\Warmer\UrlWarmer">
+        <arguments><argument name="logger" xsi:type="object">Commerce\CacheTools\Logger</argument></arguments>
+    </type>
+    <type name="Commerce\CacheTools\Model\Product\FrontendUrlResolver">
+        <arguments><argument name="logger" xsi:type="object">Commerce\CacheTools\Logger</argument></arguments>
+    </type>
+    <type name="Commerce\CacheTools\Model\Product\ProductSaveCacheRefresher">
+        <arguments><argument name="logger" xsi:type="object">Commerce\CacheTools\Logger</argument></arguments>
+    </type>
+    <type name="Commerce\CacheTools\Observer\RefreshCacheOnProductSave">
+        <arguments><argument name="logger" xsi:type="object">Commerce\CacheTools\Logger</argument></arguments>
+    </type>
+    <type name="Commerce\CacheTools\Cron\ReapStaleWarmRuns">
+        <arguments><argument name="logger" xsi:type="object">Commerce\CacheTools\Logger</argument></arguments>
+    </type>
+    <type name="Commerce\CacheTools\Lock\WarmLock">
+        <arguments><argument name="logger" xsi:type="object">Commerce\CacheTools\Logger</argument></arguments>
+    </type>
+
+    <virtualType name="Commerce\CacheTools\Logger\Handler" type="Commerce\Logger\Handler">
+        <arguments>
+            <argument name="fileName" xsi:type="string">cache_tools.log</argument>
+            <argument name="subDirectory" xsi:type="string">commerce</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Commerce\CacheTools\Logger" type="Commerce\Logger\Logger">
+        <arguments>
+            <argument name="name" xsi:type="string">commerce_cachetools</argument>
+            <argument name="handlers" xsi:type="array">
+                <item name="system" xsi:type="object">Commerce\CacheTools\Logger\Handler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+</config>

@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:MessageQueue/etc/topology.xsd">
+    <exchange name="magento-commerce-cachetools" type="topic" connection="amqp">
+        <binding id="CommerceCacheToolsWarmBinding" topic="commerce.cachetools.warm"
+                 destinationType="queue" destination="commerce.cachetools.warm"/>
+        <binding id="CommerceCacheToolsRewarmBinding" topic="commerce.cachetools.rewarm"
+                 destinationType="queue" destination="commerce.cachetools.rewarm"/>
+    </exchange>
+</config>

@@ -1,0 +1,120 @@
+<?php
+/**
+ * @copyright Copyright (c) the Commerce modules authors
+ * @license   OSL-3.0 https://opensource.org/licenses/OSL-3.0
+ */
+declare(strict_types=1);
+
+namespace Commerce\CacheTools\Test\Unit\Model\Fastly\Purge;
+
+use Commerce\CacheTools\Api\PurgeStrategyInterface;
+use Commerce\CacheTools\Model\Config;
+use Commerce\CacheTools\Model\Fastly\Purge\PurgeStrategyPool;
+use Commerce\CacheTools\Test\Unit\Fake\RecordingLogger;
+use InvalidArgumentException;
+use PHPUnit\Framework\TestCase;
+use stdClass;
+
+/**
+ * A di.xml array argument is unchecked, so the pool validates its own contents
+ * at construction.
+ */
+final class PurgeStrategyPoolTest extends TestCase
+{
+    private RecordingLogger $logger;
+
+    protected function setUp(): void
+    {
+        $this->logger = new RecordingLogger();
+    }
+
+    public function testTheConfiguredStrategyIsReturned(): void
+    {
+        $surrogate = $this->strategy();
+
+        $pool = $this->pool('surrogate', ['surrogate' => $surrogate, 'url' => $this->strategy()]);
+
+        self::assertSame($surrogate, $pool->get());
+    }
+
+    public function testAnUnregisteredCodeReturnsNullRatherThanGuessing(): void
+    {
+        $pool = $this->pool('typo', ['surrogate' => $this->strategy()]);
+
+        self::assertNull($pool->get());
+    }
+
+    /**
+     * The null has to be explained, or a purge that quietly does nothing looks
+     * exactly like a purge with nothing to do.
+     */
+    public function testAnUnregisteredCodeIsLoggedWithTheCodesThatDoExist(): void
+    {
+        $this->pool('typo', ['surrogate' => $this->strategy(), 'url' => $this->strategy()])->get();
+
+        self::assertCount(1, $this->logger->errors);
+        self::assertStringContainsString('"typo"', $this->logger->errors[0]);
+        self::assertStringContainsString('surrogate, url', $this->logger->errors[0]);
+    }
+
+    public function testAnEmptyPoolSaysSoRatherThanListingNothing(): void
+    {
+        $this->pool('surrogate', [])->get();
+
+        self::assertStringContainsString('(none)', $this->logger->errors[0]);
+    }
+
+    /**
+     * An array argument in di.xml is unvalidated by the container.
+     */
+    public function testANonStrategyInThePoolIsRejectedAtConstruction(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('"broken"');
+
+        new PurgeStrategyPool(
+            $this->createMock(Config::class),
+            $this->logger,
+            ['broken' => new stdClass()]
+        );
+    }
+
+    public function testTheRejectionNamesTheTypeThatWasActuallyGiven(): void
+    {
+        try {
+            new PurgeStrategyPool($this->createMock(Config::class), $this->logger, ['broken' => 'a string']);
+            self::fail('A string is not a purge strategy.');
+        } catch (InvalidArgumentException $e) {
+            self::assertStringContainsString('string', $e->getMessage());
+            self::assertStringContainsString(PurgeStrategyInterface::class, $e->getMessage());
+        }
+    }
+
+    public function testAvailableCodesListsWhatWasRegistered(): void
+    {
+        $pool = $this->pool('surrogate', ['surrogate' => $this->strategy(), 'url' => $this->strategy()]);
+
+        self::assertSame(['surrogate', 'url'], $pool->getAvailableCodes());
+    }
+
+    public function testAnEmptyPoolHasNoAvailableCodes(): void
+    {
+        self::assertSame([], $this->pool('surrogate', [])->getAvailableCodes());
+    }
+
+    /**
+     * @param array<string, PurgeStrategyInterface> $strategies
+     */
+    private function pool(string $configured, array $strategies): PurgeStrategyPool
+    {
+        $config = $this->createMock(Config::class);
+        $config->method('getPurgeStrategy')->willReturn($configured);
+
+        return new PurgeStrategyPool($config, $this->logger, $strategies);
+    }
+
+    private function strategy(): PurgeStrategyInterface
+    {
+        return $this->createMock(PurgeStrategyInterface::class);
+    }
+}

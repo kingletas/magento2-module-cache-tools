@@ -1,0 +1,61 @@
+<?php
+/**
+ * edge-controls.phtml
+ *
+ * @var \Magento\Backend\Block\Template $block
+ * @var \Magento\Framework\Escaper $escaper
+ * @var \Commerce\CacheTools\ViewModel\CacheUrl $viewModel
+ *
+ * @package     Commerce_CacheTools
+ * @copyright   Copyright (c) the Commerce modules authors
+ * @license     OSL-3.0 https://opensource.org/licenses/OSL-3.0
+ */
+declare(strict_types=1);
+
+$viewModel = $block->getData('view_model');
+
+if ($viewModel === null || !$viewModel->isEnabled()) {
+    return;
+}
+
+$urls = $viewModel->getCacheUrls();
+$mageInit = json_encode(['commerceEdgeControls' => json_decode($viewModel->getJsonConfig(), true)]);
+?>
+<div class="commerce-cachetools-panel"
+     data-mage-init='<?= /* @noEscape */ $mageInit ?>'>
+    <div class="admin__page-section-title">
+        <span class="title"><?= $escaper->escapeHtml(__('Edge Cache')) ?></span>
+    </div>
+
+    <div class="admin__field">
+        <label class="admin__field-label" for="commerce-cachetools-url">
+            <?= $escaper->escapeHtml(__('URL')) ?>
+        </label>
+        <div class="admin__field-control">
+            <input id="commerce-cachetools-url"
+                   type="text"
+                   class="admin__control-text"
+                   list="commerce-cachetools-urls"
+                   data-edge="url"
+                   value="<?= $escaper->escapeHtmlAttr($urls[0] ?? '') ?>">
+            <datalist id="commerce-cachetools-urls">
+                <?php foreach ($urls as $url): ?>
+                    <option value="<?= $escaper->escapeHtmlAttr($url) ?>"></option>
+                <?php endforeach; ?>
+            </datalist>
+        </div>
+    </div>
+
+    <div class="admin__field">
+        <div class="admin__field-control">
+            <button type="button" class="action-secondary" data-edge="health">
+                <span><?= $escaper->escapeHtml(__('Check Cache Health')) ?></span>
+            </button>
+            <button type="button" class="action-primary" data-edge="flush">
+                <span><?= $escaper->escapeHtml(__('Flush Edge Cache')) ?></span>
+            </button>
+        </div>
+    </div>
+
+    <div class="message" data-edge="result" style="display: none;"></div>
+</div>

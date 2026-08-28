@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <commerce_cachetools>
+            <fastly>
+                <enable>0</enable>
+                <purge_strategy>url</purge_strategy>
+                <!-- Soft purges keep shoppers on a fast stale response while origin revalidates. -->
+                <soft_purge>1</soft_purge>
+            </fastly>
+            <environment>
+                <!--
+                    Leave blank and the guard treats this deployment as
+                    non-production, refusing service-wide purges.
+                -->
+                <production_host></production_host>
+                <non_production_marker>stage</non_production_marker>
+            </environment>
+            <warmer>
+                <simple_batch_size>1000</simple_batch_size>
+                <configurable_batch_size>1000</configurable_batch_size>
+                <stale_run_hours>24</stale_run_hours>
+            </warmer>
+        </commerce_cachetools>
+    </default>
+</config>

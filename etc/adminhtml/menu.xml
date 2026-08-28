@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="Commerce_CacheTools::cache_tools" title="Cache Tools" module="Commerce_CacheTools"
+             sortOrder="90" parent="Magento_Backend::system" resource="Commerce_CacheTools::cache_tools"/>
+        <add id="Commerce_CacheTools::warm_runs" title="Cache Warm Runs" module="Commerce_CacheTools"
+             sortOrder="10" parent="Commerce_CacheTools::cache_tools"
+             action="commerce_cachetools/warmrun/index" resource="Commerce_CacheTools::warm_runs"/>
+    </menu>
+</config>

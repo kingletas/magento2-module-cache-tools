@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:MessageQueue/etc/publisher.xsd">
+    <publisher topic="commerce.cachetools.warm">
+        <connection name="amqp" exchange="magento-commerce-cachetools"/>
+    </publisher>
+    <publisher topic="commerce.cachetools.rewarm">
+        <connection name="amqp" exchange="magento-commerce-cachetools"/>
+    </publisher>
+</config>

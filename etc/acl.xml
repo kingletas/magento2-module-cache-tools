@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!--
+    /** * acl.xml * * @package Commerce_CacheTools * @copyright Copyright (c)
+    the Commerce modules authors */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Acl/etc/acl.xsd">
+    <acl>
+        <resources>
+            <resource id="Magento_Backend::admin">
+                <resource id="Magento_Backend::system">
+                    <resource id="Commerce_CacheTools::cache_tools" title="Cache Tools" translate="title" sortOrder="90">
+                        <resource id="Commerce_CacheTools::warm_runs" title="Cache Warm Runs" translate="title" sortOrder="10"/>
+                        <!--
+                            Purging and health-checking are separate resources:
+                            reading cache state is harmless.
+                        -->
+                        <resource id="Commerce_CacheTools::varnish_flush" title="Flush Edge Cache" translate="title" sortOrder="20"/>
+                        <resource id="Commerce_CacheTools::varnish_health" title="Check Edge Cache Health" translate="title" sortOrder="30"/>
+                    </resource>
+                </resource>
+                <resource id="Magento_Backend::stores">
+                    <resource id="Magento_Backend::stores_settings">
+                        <resource id="Magento_Config::config">
+                            <resource id="Commerce_CacheTools::config" title="Cache Tools Section" translate="title" sortOrder="900"/>
+                        </resource>
+                    </resource>
+                </resource>
+            </resource>
+        </resources>
+    </acl>
+</config>

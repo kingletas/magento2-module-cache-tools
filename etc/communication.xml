@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<!--
+    Magento defaults an omitted `is_synchronous` to true, which publishes the
+    topic synchronously.
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Communication/etc/communication.xsd">
+    <topic name="commerce.cachetools.warm" request="string" is_synchronous="false"/>
+    <topic name="commerce.cachetools.rewarm" request="string" is_synchronous="false"/>
+</config>
