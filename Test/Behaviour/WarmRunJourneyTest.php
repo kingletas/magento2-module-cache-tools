@@ -186,7 +186,7 @@ final class WarmRunJourneyTest extends TestCase
         self::assertSame(WarmRunInterface::STATUS_RUNNING, $this->runs->statusOf($runId));
 
         // Two days pass and the remaining batches never arrive.
-        $this->runs->noProgressSince($runId, date('Y-m-d H:i:s', strtotime('-2 days')));
+        $this->runs->noProgressSince($runId, $this->hoursAgo(48));
 
         self::assertSame(1, $this->reap());
         self::assertSame(WarmRunInterface::STATUS_STALE, $this->runs->statusOf($runId));
@@ -200,7 +200,7 @@ final class WarmRunJourneyTest extends TestCase
     {
         $runId = $this->queueWarm();
         $this->queue = [];
-        $this->runs->noProgressSince((int) $runId, date('Y-m-d H:i:s', strtotime('-2 days')));
+        $this->runs->noProgressSince((int) $runId, $this->hoursAgo(48));
 
         $this->reap();
 
@@ -401,14 +401,25 @@ final class WarmRunJourneyTest extends TestCase
         );
     }
 
+    /**
+     * Gets a timestamp before the test clock, not before the wall clock.
+     */
+    private function hoursAgo(int $hours): string
+    {
+        return gmdate('Y-m-d H:i:s', strtotime(sprintf('-%d hours', $hours), (int) strtotime($this->now)));
+    }
+
     private function dateTime(): DateTime
     {
         $dateTime = $this->createMock(DateTime::class);
         // Magento's own signature is `gmtDate($format = null, $input = null)`,
         // and the tracker calls it with neither argument.
+        $dateTime->method('gmtTimestamp')->willReturnCallback(
+            fn (): int => (int) strtotime($this->now)
+        );
         $dateTime->method('gmtDate')->willReturnCallback(
             fn ($format = null, $input = null): string =>
-                $input === null ? $this->now : date((string) ($format ?: 'Y-m-d H:i:s'), (int) $input)
+                $input === null ? $this->now : gmdate((string) ($format ?: 'Y-m-d H:i:s'), (int) $input)
         );
 
         return $dateTime;

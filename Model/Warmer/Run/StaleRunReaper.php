@@ -34,7 +34,10 @@ class StaleRunReaper
     public function reap(): int
     {
         $hours = $this->config->getStaleRunHours();
-        $cutoff = $this->dateTime->gmtDate('Y-m-d H:i:s', strtotime(sprintf('-%d hours', $hours)));
+        $cutoff = $this->dateTime->gmtDate(
+            'Y-m-d H:i:s',
+            strtotime(sprintf('-%d hours', $hours), $this->dateTime->gmtTimestamp())
+        );
 
         $reaped = $this->resource->markStaleRuns($cutoff, $this->dateTime->gmtDate());
 
