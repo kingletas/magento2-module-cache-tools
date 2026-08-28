@@ -9,11 +9,11 @@ namespace Commerce\CacheTools\Test\Unit\Model\Fastly;
 
 use Commerce\CacheTools\Model\Fastly\HealthResult;
 use Commerce\CacheTools\Model\Fastly\VarnishHealthCheck;
-use Commerce\CacheTools\Test\Unit\Fake\RecordingLogger;
 use Magento\Framework\HTTP\Client\Curl;
 use Magento\Framework\HTTP\Client\CurlFactory;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
 
 class VarnishHealthCheckTest extends TestCase
@@ -27,7 +27,7 @@ class VarnishHealthCheckTest extends TestCase
     private ?int $timeout = null;
     private int $status = 200;
     private ?\Throwable $fetchFailure = null;
-    private RecordingLogger $logger;
+    private LoggerInterface&MockObject $logger;
 
     protected function setUp(): void
     {
@@ -36,7 +36,7 @@ class VarnishHealthCheckTest extends TestCase
         $this->timeout = null;
         $this->status = 200;
         $this->fetchFailure = null;
-        $this->logger = new RecordingLogger();
+        $this->logger = $this->createMock(LoggerInterface::class);
     }
 
     /**
@@ -145,13 +145,14 @@ class VarnishHealthCheckTest extends TestCase
      */
     public function testAnUnreachableUrlIsReportedAsAResultAndLogged(): void
     {
+        $this->logger->expects($this->once())->method('warning');
+
         $this->fetchFailure = new RuntimeException('Connection timed out');
 
         $result = $this->check()->check('https://shop.test/a.html');
 
         $this->assertFalse($result->reachable);
         $this->assertStringContainsString('Connection timed out', (string) $result->error);
-        $this->assertCount(1, $this->logger->warnings);
     }
 
     /**

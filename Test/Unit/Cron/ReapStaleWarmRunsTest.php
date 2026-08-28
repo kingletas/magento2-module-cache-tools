@@ -9,18 +9,18 @@ namespace Commerce\CacheTools\Test\Unit\Cron;
 
 use Commerce\CacheTools\Cron\ReapStaleWarmRuns;
 use Commerce\CacheTools\Model\Warmer\Run\StaleRunReaper;
-use Commerce\CacheTools\Test\Unit\Fake\RecordingLogger;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
 
 class ReapStaleWarmRunsTest extends TestCase
 {
-    private RecordingLogger $logger;
+    private LoggerInterface&MockObject $logger;
 
     protected function setUp(): void
     {
-        $this->logger = new RecordingLogger();
+        $this->logger = $this->createMock(LoggerInterface::class);
     }
 
     public function testTheScheduledSweepReapsAbandonedRuns(): void
@@ -37,22 +37,23 @@ class ReapStaleWarmRunsTest extends TestCase
      */
     public function testAFailedSweepIsLoggedRatherThanThrownAtCron(): void
     {
+        $this->logger->expects($this->once())
+            ->method('error')
+            ->with($this->stringContains('reaping stale warm runs'));
+
         $reaper = $this->createMock(StaleRunReaper::class);
         $reaper->method('reap')->willThrowException(new RuntimeException('lock wait timeout'));
 
         (new ReapStaleWarmRuns($reaper, $this->logger))->execute();
-
-        $this->assertCount(1, $this->logger->errors);
-        $this->assertStringContainsString('reaping stale warm runs', $this->logger->errors[0]);
     }
 
     public function testASuccessfulSweepSaysNothing(): void
     {
+        $this->logger->expects($this->never())->method('error');
+
         $reaper = $this->createMock(StaleRunReaper::class);
         $reaper->method('reap')->willReturn(0);
 
         (new ReapStaleWarmRuns($reaper, $this->logger))->execute();
-
-        $this->assertSame([], $this->logger->errors);
     }
 }

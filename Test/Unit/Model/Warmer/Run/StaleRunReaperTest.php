@@ -10,10 +10,10 @@ namespace Commerce\CacheTools\Test\Unit\Model\Warmer\Run;
 use Commerce\CacheTools\Model\Config;
 use Commerce\CacheTools\Model\ResourceModel\WarmRun as WarmRunResource;
 use Commerce\CacheTools\Model\Warmer\Run\StaleRunReaper;
-use Commerce\CacheTools\Test\Unit\Fake\RecordingLogger;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 class StaleRunReaperTest extends TestCase
 {
@@ -25,7 +25,7 @@ class StaleRunReaperTest extends TestCase
 
     private int $reaped = 2;
     private int $staleHours = 6;
-    private RecordingLogger $logger;
+    private LoggerInterface&MockObject $logger;
 
     protected function setUp(): void
     {
@@ -33,7 +33,7 @@ class StaleRunReaperTest extends TestCase
         $this->cutoffTimestamps = [];
         $this->reaped = 2;
         $this->staleHours = 6;
-        $this->logger = new RecordingLogger();
+        $this->logger = $this->createMock(LoggerInterface::class);
     }
 
     /**
@@ -75,11 +75,14 @@ class StaleRunReaperTest extends TestCase
      */
     public function testAReapedRunIsWarnedAboutWithItsCountAndThreshold(): void
     {
-        $this->reaper()->reap();
+        $this->logger->expects($this->once())
+            ->method('warning')
+            ->with($this->callback(
+                static fn (string $message): bool=> str_contains($message, '2 warm run(s)')
+                    && str_contains($message, '6 hour threshold')
+            ));
 
-        $this->assertCount(1, $this->logger->warnings);
-        $this->assertStringContainsString('2 warm run(s)', $this->logger->warnings[0]);
-        $this->assertStringContainsString('6 hour threshold', $this->logger->warnings[0]);
+        $this->reaper()->reap();
     }
 
     /**
@@ -88,10 +91,11 @@ class StaleRunReaperTest extends TestCase
      */
     public function testASweepThatFoundNothingSaysNothing(): void
     {
+        $this->logger->expects($this->never())->method('warning');
+
         $this->reaped = 0;
 
         $this->assertSame(0, $this->reaper()->reap());
-        $this->assertSame([], $this->logger->warnings);
     }
 
     private function reaper(): StaleRunReaper

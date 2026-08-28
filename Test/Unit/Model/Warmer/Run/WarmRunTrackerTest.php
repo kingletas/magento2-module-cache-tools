@@ -14,12 +14,12 @@ use Commerce\CacheTools\Model\ResourceModel\WarmRun\CollectionFactory;
 use Commerce\CacheTools\Model\Warmer\Run\WarmRun;
 use Commerce\CacheTools\Model\Warmer\Run\WarmRunFactory;
 use Commerce\CacheTools\Model\Warmer\Run\WarmRunTracker;
-use Commerce\CacheTools\Test\Unit\Fake\RecordingLogger;
 use Magento\Framework\Model\Context;
 use Magento\Framework\Registry;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 class WarmRunTrackerTest extends TestCase
 {
@@ -42,7 +42,7 @@ class WarmRunTrackerTest extends TestCase
 
     private bool $hasOpen = true;
     private bool $completes = true;
-    private RecordingLogger $logger;
+    private LoggerInterface&MockObject $logger;
 
     protected function setUp(): void
     {
@@ -53,7 +53,7 @@ class WarmRunTrackerTest extends TestCase
         $this->openRuns = [];
         $this->hasOpen = true;
         $this->completes = true;
-        $this->logger = new RecordingLogger();
+        $this->logger = $this->createMock(LoggerInterface::class);
     }
 
     /**
@@ -107,11 +107,13 @@ class WarmRunTrackerTest extends TestCase
      */
     public function testOpeningARunIsRecordedInTheLog(): void
     {
-        $this->tracker()->open('product', 500);
+        $this->logger->expects($this->once())
+            ->method('info')
+            ->with($this->callback(
+                static fn (string $message): bool => str_contains($message, '#7') && str_contains($message, 'product')
+            ));
 
-        $this->assertCount(1, $this->logger->infos);
-        $this->assertStringContainsString('#7', $this->logger->infos[0]);
-        $this->assertStringContainsString('product', $this->logger->infos[0]);
+        $this->tracker()->open('product', 500);
     }
 
     /**
@@ -127,9 +129,11 @@ class WarmRunTrackerTest extends TestCase
 
     public function testCompletionIsDelegatedAndReported(): void
     {
+        $this->logger->expects($this->once())
+            ->method('info')
+            ->with($this->stringContains('#7 completed'));
+
         $this->assertTrue($this->tracker()->completeIfDone(7));
-        $this->assertCount(1, $this->logger->infos);
-        $this->assertStringContainsString('#7 completed', $this->logger->infos[0]);
     }
 
     /**
@@ -138,10 +142,11 @@ class WarmRunTrackerTest extends TestCase
      */
     public function testARunThatWasNotClosedByThisCallSaysNothing(): void
     {
+        $this->logger->expects($this->never())->method('info');
+
         $this->completes = false;
 
         $this->assertFalse($this->tracker()->completeIfDone(7));
-        $this->assertSame([], $this->logger->infos);
     }
 
     public function testOpenRunsAreListedOldestFirst(): void

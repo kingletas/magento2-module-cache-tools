@@ -13,11 +13,11 @@ use Commerce\CacheTools\Model\Warmer\BatchQueuer;
 use Commerce\CacheTools\Model\Warmer\Publisher;
 use Commerce\CacheTools\Model\Warmer\Run\WarmRunTracker;
 use Commerce\CacheTools\Test\Unit\Fake\PassthroughLock;
-use Commerce\CacheTools\Test\Unit\Fake\RecordingLogger;
 use InvalidArgumentException;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 class BatchQueuerTest extends TestCase
 {
@@ -37,7 +37,7 @@ class BatchQueuerTest extends TestCase
     private int $simpleBatchSize = 2;
     private int $configurableBatchSize = 3;
     private PassthroughLock $lock;
-    private RecordingLogger $logger;
+    private LoggerInterface&MockObject $logger;
 
     protected function setUp(): void
     {
@@ -49,7 +49,7 @@ class BatchQueuerTest extends TestCase
         $this->simpleBatchSize = 2;
         $this->configurableBatchSize = 3;
         $this->lock = new PassthroughLock();
-        $this->logger = new RecordingLogger();
+        $this->logger = $this->createMock(LoggerInterface::class);
     }
 
     public function testARunIsOpenedForTheProductsItWillWarm(): void
@@ -117,11 +117,12 @@ class BatchQueuerTest extends TestCase
      */
     public function testASecondRunOfTheSameTypeIsRefused(): void
     {
+        $this->logger->expects($this->once())->method('info');
+
         $this->hasOpenRun = true;
 
         $this->assertNull($this->queuer()->queue(BatchQueuer::TYPE_SIMPLE));
         $this->assertSame([], $this->opened);
-        $this->assertCount(1, $this->logger->infos);
     }
 
     /**
@@ -157,12 +158,15 @@ class BatchQueuerTest extends TestCase
 
     public function testQueueingIsRecordedWithItsCounts(): void
     {
-        $this->queuer()->queue(BatchQueuer::TYPE_SIMPLE);
+        $this->logger->expects($this->once())
+            ->method('info')
+            ->with($this->callback(
+                static fn (string $message): bool=> str_contains($message, '#7')
+                    && str_contains($message, '5 ' . BatchQueuer::TYPE_SIMPLE)
+                    && str_contains($message, '3 batch(es)')
+            ));
 
-        $this->assertCount(1, $this->logger->infos);
-        $this->assertStringContainsString('#7', $this->logger->infos[0]);
-        $this->assertStringContainsString('5 ' . BatchQueuer::TYPE_SIMPLE, $this->logger->infos[0]);
-        $this->assertStringContainsString('3 batch(es)', $this->logger->infos[0]);
+        $this->queuer()->queue(BatchQueuer::TYPE_SIMPLE);
     }
 
     private function queuer(): BatchQueuer

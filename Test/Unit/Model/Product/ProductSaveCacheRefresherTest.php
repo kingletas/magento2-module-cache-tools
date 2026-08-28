@@ -12,11 +12,11 @@ use Commerce\CacheTools\Api\PurgeStrategyInterface;
 use Commerce\CacheTools\Model\Config;
 use Commerce\CacheTools\Model\Fastly\Purge\PurgeStrategyPool;
 use Commerce\CacheTools\Model\Product\ProductSaveCacheRefresher;
-use Commerce\CacheTools\Test\Unit\Fake\RecordingLogger;
 use Commerce\Foundation\Api\ConfigurableParentSkuResolverInterface;
 use Magento\Catalog\Api\Data\ProductInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
 
 class ProductSaveCacheRefresherTest extends TestCase
@@ -34,7 +34,7 @@ class ProductSaveCacheRefresherTest extends TestCase
     private ?\Throwable $parentFailure = null;
     private ?\Throwable $keyFailure = null;
     private ?PurgeStrategyInterface $strategy = null;
-    private RecordingLogger $logger;
+    private LoggerInterface&MockObject $logger;
 
     protected function setUp(): void
     {
@@ -47,7 +47,7 @@ class ProductSaveCacheRefresherTest extends TestCase
         $this->parentFailure = null;
         $this->keyFailure = null;
         $this->strategy = null;
-        $this->logger = new RecordingLogger();
+        $this->logger = $this->createMock(LoggerInterface::class);
     }
 
     public function testTheSavedProductIsPurgedFromTheEdgeAndTheKeyedCaches(): void
@@ -77,12 +77,13 @@ class ProductSaveCacheRefresherTest extends TestCase
      */
     public function testAFailedEdgePurgeStillLeavesTheKeyedCachesPurged(): void
     {
+        $this->logger->expects($this->once())->method('error');
+
         $this->edgeFailure = new RuntimeException('Fastly returned 503');
 
         $this->refresher()->refresh($this->product('SKU-1'));
 
         $this->assertSame([['SKU-1']], $this->keyPurges);
-        $this->assertCount(1, $this->logger->errors);
     }
 
     /**
@@ -91,21 +92,22 @@ class ProductSaveCacheRefresherTest extends TestCase
      */
     public function testAFailedParentLookupStillPurgesTheSavedSku(): void
     {
+        $this->logger->expects($this->once())->method('warning');
+
         $this->parentFailure = new RuntimeException('link table is locked');
 
         $this->refresher()->refresh($this->product('SKU-1'));
 
         $this->assertSame([['SKU-1']], $this->keyPurges);
-        $this->assertCount(1, $this->logger->warnings);
     }
 
     public function testAFailedKeyPurgeIsLoggedRatherThanThrown(): void
     {
+        $this->logger->expects($this->once())->method('error');
+
         $this->keyFailure = new RuntimeException('redis is down');
 
         $this->refresher()->refresh($this->product('SKU-1'));
-
-        $this->assertCount(1, $this->logger->errors);
     }
 
     /**
@@ -142,12 +144,13 @@ class ProductSaveCacheRefresherTest extends TestCase
      */
     public function testAnEmptyStrategyPoolIsNotAFailure(): void
     {
+        $this->logger->expects($this->never())->method('error');
+
         $this->strategy = null;
 
         $this->refresher(withStrategy: false)->refresh($this->product('SKU-1'));
 
         $this->assertSame([['SKU-1']], $this->keyPurges);
-        $this->assertSame([], $this->logger->errors);
     }
 
     /**

@@ -8,11 +8,11 @@ declare(strict_types=1);
 namespace Commerce\CacheTools\Test\Unit\Model\Warmer;
 
 use Commerce\CacheTools\Model\Warmer\UrlWarmer;
-use Commerce\CacheTools\Test\Unit\Fake\RecordingLogger;
 use Magento\Framework\HTTP\Client\Curl;
 use Magento\Framework\HTTP\Client\CurlFactory;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
 
 class UrlWarmerTest extends TestCase
@@ -26,7 +26,7 @@ class UrlWarmerTest extends TestCase
     private ?int $timeout = null;
     private int $status = 200;
     private ?\Throwable $fetchFailure = null;
-    private RecordingLogger $logger;
+    private LoggerInterface&MockObject $logger;
 
     protected function setUp(): void
     {
@@ -35,7 +35,7 @@ class UrlWarmerTest extends TestCase
         $this->timeout = null;
         $this->status = 200;
         $this->fetchFailure = null;
-        $this->logger = new RecordingLogger();
+        $this->logger = $this->createMock(LoggerInterface::class);
     }
 
     public function testAUrlIsFetchedSoTheEdgeCachesIt(): void
@@ -91,10 +91,11 @@ class UrlWarmerTest extends TestCase
      */
     public function testARedirectCountsAsACacheableSuccess(): void
     {
+        $this->logger->expects($this->never())->method('warning');
+
         $this->status = 301;
 
         $this->assertTrue($this->warmer()->warm('https://shop.test/a.html'));
-        $this->assertSame([], $this->logger->warnings);
     }
 
     /**
@@ -102,11 +103,13 @@ class UrlWarmerTest extends TestCase
      */
     public function testAnErrorResponseIsReportedWithItsStatus(): void
     {
+        $this->logger->expects($this->once())
+            ->method('warning')
+            ->with($this->stringContains('503'));
+
         $this->status = 503;
 
         $this->assertFalse($this->warmer()->warm('https://shop.test/a.html'));
-        $this->assertCount(1, $this->logger->warnings);
-        $this->assertStringContainsString('503', $this->logger->warnings[0]);
     }
 
     /**
@@ -115,9 +118,10 @@ class UrlWarmerTest extends TestCase
      */
     public function testAMalformedUrlIsRefusedWithoutAFetch(): void
     {
+        $this->logger->expects($this->once())->method('warning');
+
         $this->assertFalse($this->warmer()->warm('not a url'));
         $this->assertSame([], $this->fetched);
-        $this->assertCount(1, $this->logger->warnings);
     }
 
     /**
@@ -126,11 +130,12 @@ class UrlWarmerTest extends TestCase
      */
     public function testAnUnreachableOriginIsContainedAndLogged(): void
     {
+        $this->logger->expects($this->once())->method('warning');
+        $this->logger->expects($this->never())->method('error');
+
         $this->fetchFailure = new RuntimeException('Connection timed out');
 
         $this->assertFalse($this->warmer()->warm('https://shop.test/a.html'));
-        $this->assertCount(1, $this->logger->warnings);
-        $this->assertSame([], $this->logger->errors);
     }
 
     private function warmer(int $timeout = 30, string $userAgent = 'Commerce-CacheTools/1.0 (cache warmer)'): UrlWarmer

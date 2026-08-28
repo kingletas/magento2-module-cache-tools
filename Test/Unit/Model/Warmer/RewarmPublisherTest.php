@@ -8,10 +8,10 @@ declare(strict_types=1);
 namespace Commerce\CacheTools\Test\Unit\Model\Warmer;
 
 use Commerce\CacheTools\Model\Warmer\RewarmPublisher;
-use Commerce\CacheTools\Test\Unit\Fake\RecordingLogger;
 use Magento\Framework\MessageQueue\PublisherInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
 
 class RewarmPublisherTest extends TestCase
@@ -20,13 +20,13 @@ class RewarmPublisherTest extends TestCase
     private array $published = [];
 
     private ?\Throwable $publishFailure = null;
-    private RecordingLogger $logger;
+    private LoggerInterface&MockObject $logger;
 
     protected function setUp(): void
     {
         $this->published = [];
         $this->publishFailure = null;
-        $this->logger = new RecordingLogger();
+        $this->logger = $this->createMock(LoggerInterface::class);
     }
 
     /**
@@ -69,12 +69,13 @@ class RewarmPublisherTest extends TestCase
      */
     public function testABrokerOutageIsLoggedRatherThanFailingThePurge(): void
     {
+        $this->logger->expects($this->once())
+            ->method('warning')
+            ->with($this->stringContains('https://shop.test/scrub-top.html'));
+
         $this->publishFailure = new RuntimeException('AMQP connection refused');
 
         $this->publisher()->publish('https://shop.test/scrub-top.html');
-
-        $this->assertCount(1, $this->logger->warnings);
-        $this->assertStringContainsString('https://shop.test/scrub-top.html', $this->logger->warnings[0]);
     }
 
     /**
@@ -83,11 +84,11 @@ class RewarmPublisherTest extends TestCase
      */
     public function testAFailedQueueIsNotReportedAsAnError(): void
     {
+        $this->logger->expects($this->never())->method('error');
+
         $this->publishFailure = new RuntimeException('AMQP connection refused');
 
         $this->publisher()->publish('https://shop.test/scrub-top.html');
-
-        $this->assertSame([], $this->logger->errors);
     }
 
     private function publisher(string $topic = RewarmPublisher::DEFAULT_TOPIC): RewarmPublisher

@@ -9,7 +9,6 @@ namespace Commerce\CacheTools\Test\Unit\Model\Warmer\Task;
 
 use Commerce\CacheTools\Api\SwatchCacheWarmerInterface;
 use Commerce\CacheTools\Model\Warmer\Task\SwatchRendererWarmer;
-use Commerce\CacheTools\Test\Unit\Fake\RecordingLogger;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Model\Product;
 use Magento\Framework\View\Element\BlockInterface;
@@ -18,6 +17,7 @@ use Magento\Framework\View\LayoutInterface;
 use Magento\Swatches\Block\Product\Renderer\Configurable as SwatchRenderer;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
 
 class SwatchRendererWarmerTest extends TestCase
@@ -28,7 +28,7 @@ class SwatchRendererWarmerTest extends TestCase
     private int $renders = 0;
     private ?Product $renderedFor = null;
     private ?\Throwable $renderFailure = null;
-    private RecordingLogger $logger;
+    private LoggerInterface&MockObject $logger;
 
     protected function setUp(): void
     {
@@ -36,7 +36,7 @@ class SwatchRendererWarmerTest extends TestCase
         $this->renders = 0;
         $this->renderedFor = null;
         $this->renderFailure = null;
-        $this->logger = new RecordingLogger();
+        $this->logger = $this->createMock(LoggerInterface::class);
     }
 
     public function testItIsTheDefaultSwatchWarmer(): void
@@ -101,11 +101,13 @@ class SwatchRendererWarmerTest extends TestCase
      */
     public function testAFailingRenderIsContainedAndLogged(): void
     {
+        $this->logger->expects($this->once())
+            ->method('warning')
+            ->with($this->stringContains('SKU-1'));
+
         $this->renderFailure = new RuntimeException('missing attribute option');
 
         $this->assertFalse($this->warmer()->warm($this->product()));
-        $this->assertCount(1, $this->logger->warnings);
-        $this->assertStringContainsString('SKU-1', $this->logger->warnings[0]);
     }
 
     public function testTheDefaultBlockIsMagentosOwnSwatchRenderer(): void

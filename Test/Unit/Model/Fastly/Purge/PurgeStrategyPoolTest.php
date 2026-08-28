@@ -10,9 +10,10 @@ namespace Commerce\CacheTools\Test\Unit\Model\Fastly\Purge;
 use Commerce\CacheTools\Api\PurgeStrategyInterface;
 use Commerce\CacheTools\Model\Config;
 use Commerce\CacheTools\Model\Fastly\Purge\PurgeStrategyPool;
-use Commerce\CacheTools\Test\Unit\Fake\RecordingLogger;
 use InvalidArgumentException;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use stdClass;
 
 /**
@@ -21,11 +22,11 @@ use stdClass;
  */
 class PurgeStrategyPoolTest extends TestCase
 {
-    private RecordingLogger $logger;
+    private LoggerInterface&MockObject $logger;
 
     protected function setUp(): void
     {
-        $this->logger = new RecordingLogger();
+        $this->logger = $this->createMock(LoggerInterface::class);
     }
 
     public function testTheConfiguredStrategyIsReturned(): void
@@ -50,18 +51,23 @@ class PurgeStrategyPoolTest extends TestCase
      */
     public function testAnUnregisteredCodeIsLoggedWithTheCodesThatDoExist(): void
     {
-        $this->pool('typo', ['surrogate' => $this->strategy(), 'url' => $this->strategy()])->get();
+        $this->logger->expects($this->once())
+            ->method('error')
+            ->with($this->callback(
+                static fn (string $message): bool=> str_contains($message, '"typo"')
+                    && str_contains($message, 'surrogate, url')
+            ));
 
-        $this->assertCount(1, $this->logger->errors);
-        $this->assertStringContainsString('"typo"', $this->logger->errors[0]);
-        $this->assertStringContainsString('surrogate, url', $this->logger->errors[0]);
+        $this->pool('typo', ['surrogate' => $this->strategy(), 'url' => $this->strategy()])->get();
     }
 
     public function testAnEmptyPoolSaysSoRatherThanListingNothing(): void
     {
-        $this->pool('surrogate', [])->get();
+        $this->logger->expects($this->once())
+            ->method('error')
+            ->with($this->stringContains('(none)'));
 
-        $this->assertStringContainsString('(none)', $this->logger->errors[0]);
+        $this->pool('surrogate', [])->get();
     }
 
     /**

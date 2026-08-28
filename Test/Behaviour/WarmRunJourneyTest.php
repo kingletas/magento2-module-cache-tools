@@ -24,7 +24,6 @@ use Commerce\CacheTools\Model\Warmer\Run\WarmRunTracker;
 use Commerce\CacheTools\Model\Warmer\WarmResult;
 use Commerce\CacheTools\Queue\WarmConsumer;
 use Commerce\CacheTools\Test\Behaviour\Fake\InMemoryWarmRuns;
-use Commerce\CacheTools\Test\Unit\Fake\RecordingLogger;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
 use Magento\Framework\App\State;
@@ -33,7 +32,9 @@ use Magento\Framework\Lock\LockManagerInterface;
 use Magento\Framework\MessageQueue\PublisherInterface;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\Stdlib\DateTime\DateTime;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
 
 /**
@@ -45,7 +46,7 @@ class WarmRunJourneyTest extends TestCase
     private const NOW = '2026-08-27 09:00:00';
 
     private InMemoryWarmRuns $runs;
-    private RecordingLogger $logger;
+    private LoggerInterface&MockObject $logger;
 
     /** @var string[] Serialized messages on the queue. */
     private array $queue = [];
@@ -66,7 +67,7 @@ class WarmRunJourneyTest extends TestCase
     protected function setUp(): void
     {
         $this->runs = new InMemoryWarmRuns();
-        $this->logger = new RecordingLogger();
+        $this->logger = $this->createMock(LoggerInterface::class);
         $this->queue = [];
         $this->catalogue = range(1, 250);
         $this->warmed = [];
@@ -130,6 +131,10 @@ class WarmRunJourneyTest extends TestCase
      */
     public function testARedeliveredBatchIsSkippedAndSaysSoRatherThanWarmingTwice(): void
     {
+        $this->logger->expects($this->atLeastOnce())
+            ->method('warning')
+            ->with($this->stringContains('will not reach its total'));
+
         $this->catalogue = range(1, 100);
         $runId = $this->queueWarm();
         $message = $this->queue[0];
@@ -143,7 +148,6 @@ class WarmRunJourneyTest extends TestCase
         $this->consume($message);
 
         $this->assertCount($warmedAfterFirst, $this->warmed, 'A redelivery must not warm the batch twice.');
-        $this->assertNotSame([], $this->logger->warnings, 'And it must say that the run will not reach its total.');
     }
 
     /**

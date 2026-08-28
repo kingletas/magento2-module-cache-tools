@@ -10,11 +10,11 @@ namespace Commerce\CacheTools\Test\Unit\Model\Fastly;
 use Commerce\CacheTools\Model\Config;
 use Commerce\CacheTools\Model\Fastly\FastlyClientFactory;
 use Commerce\CacheTools\Model\Fastly\ServiceIdProvider;
-use Commerce\CacheTools\Test\Unit\Fake\RecordingLogger;
 use Fastly\Api\ServiceApi;
 use Magento\Framework\Exception\LocalizedException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 class ServiceIdProviderTest extends TestCase
 {
@@ -24,7 +24,7 @@ class ServiceIdProviderTest extends TestCase
     private string $configuredId = '';
     private string $configuredName = 'shop-production';
     private string $discoveredId = 'svc_123';
-    private RecordingLogger $logger;
+    private LoggerInterface&MockObject $logger;
 
     protected function setUp(): void
     {
@@ -32,7 +32,7 @@ class ServiceIdProviderTest extends TestCase
         $this->configuredId = '';
         $this->configuredName = 'shop-production';
         $this->discoveredId = 'svc_123';
-        $this->logger = new RecordingLogger();
+        $this->logger = $this->createMock(LoggerInterface::class);
     }
 
     /**
@@ -72,11 +72,14 @@ class ServiceIdProviderTest extends TestCase
      */
     public function testADiscoveryIsRecordedWithBothTheNameAndTheId(): void
     {
-        $this->provider()->get();
+        $this->logger->expects($this->once())
+            ->method('info')
+            ->with($this->callback(
+                static fn (string $message): bool=> str_contains($message, 'shop-production')
+                    && str_contains($message, 'svc_123')
+            ));
 
-        $this->assertCount(1, $this->logger->infos);
-        $this->assertStringContainsString('shop-production', $this->logger->infos[0]);
-        $this->assertStringContainsString('svc_123', $this->logger->infos[0]);
+        $this->provider()->get();
     }
 
     /**

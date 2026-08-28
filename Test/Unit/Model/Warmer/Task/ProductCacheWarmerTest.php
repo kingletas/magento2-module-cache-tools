@@ -11,7 +11,6 @@ use Commerce\CacheTools\Api\SwatchCacheWarmerInterface;
 use Commerce\CacheTools\Api\WarmTaskInterface;
 use Commerce\CacheTools\Model\Product\ActiveProductCollection;
 use Commerce\CacheTools\Model\Warmer\Task\ProductCacheWarmer;
-use Commerce\CacheTools\Test\Unit\Fake\RecordingLogger;
 use Commerce\Foundation\Api\ProductImageUrlResolverInterface;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
@@ -19,6 +18,7 @@ use Magento\ConfigurableProduct\Model\Product\Type\Configurable as ConfigurableT
 use Magento\Catalog\Model\Product\Type as ProductType;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
 
 class ProductCacheWarmerTest extends TestCase
@@ -44,7 +44,7 @@ class ProductCacheWarmerTest extends TestCase
     /** @var ProductInterface[] */
     private array $items = [];
 
-    private RecordingLogger $logger;
+    private LoggerInterface&MockObject $logger;
 
     protected function setUp(): void
     {
@@ -54,7 +54,7 @@ class ProductCacheWarmerTest extends TestCase
         $this->selectedAttributes = [];
         $this->flags = [];
         $this->failing = [];
-        $this->logger = new RecordingLogger();
+        $this->logger = $this->createMock(LoggerInterface::class);
         $this->items = [];
     }
 
@@ -153,6 +153,8 @@ class ProductCacheWarmerTest extends TestCase
      */
     public function testAFailureIsReportedInTheResultAndTheLog(): void
     {
+        $this->logger->expects($this->once())->method('error');
+
         $this->items = [$this->product('SKU-1')];
         $this->failing = ['SKU-1'];
 
@@ -160,7 +162,6 @@ class ProductCacheWarmerTest extends TestCase
 
         $this->assertCount(1, $result->messages);
         $this->assertStringContainsString('SKU-1', $result->messages[0]);
-        $this->assertCount(1, $this->logger->errors);
     }
 
     /**

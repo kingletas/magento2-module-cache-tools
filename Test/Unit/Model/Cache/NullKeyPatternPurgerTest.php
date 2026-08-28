@@ -9,16 +9,17 @@ namespace Commerce\CacheTools\Test\Unit\Model\Cache;
 
 use Commerce\CacheTools\Api\KeyPatternPurgerInterface;
 use Commerce\CacheTools\Model\Cache\NullKeyPatternPurger;
-use Commerce\CacheTools\Test\Unit\Fake\RecordingLogger;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 class NullKeyPatternPurgerTest extends TestCase
 {
-    private RecordingLogger $logger;
+    private LoggerInterface&MockObject $logger;
 
     protected function setUp(): void
     {
-        $this->logger = new RecordingLogger();
+        $this->logger = $this->createMock(LoggerInterface::class);
     }
 
     public function testItIsTheFallbackBindingForThePurgerContract(): void
@@ -42,10 +43,11 @@ class NullKeyPatternPurgerTest extends TestCase
      */
     public function testTheFirstRealPurgeWarnsThatNothingIsBeingInvalidated(): void
     {
-        $this->purger()->purgeBySkus(['SKU-1']);
+        $this->logger->expects($this->once())
+            ->method('warning')
+            ->with($this->stringContains('swatch'));
 
-        $this->assertCount(1, $this->logger->warnings);
-        $this->assertStringContainsString('swatch', $this->logger->warnings[0]);
+        $this->purger()->purgeBySkus(['SKU-1']);
     }
 
     /**
@@ -53,12 +55,12 @@ class NullKeyPatternPurgerTest extends TestCase
      */
     public function testTheWarningIsEmittedOnlyOncePerProcess(): void
     {
+        $this->logger->expects($this->once())->method('warning');
+
         $purger = $this->purger();
 
         $purger->purgeBySkus(['SKU-1']);
         $purger->purgeBySkus(['SKU-2']);
-
-        $this->assertCount(1, $this->logger->warnings);
     }
 
     /**
@@ -66,8 +68,9 @@ class NullKeyPatternPurgerTest extends TestCase
      */
     public function testAnEmptyBatchDoesNotWarn(): void
     {
+        $this->logger->expects($this->never())->method('warning');
+
         $this->assertSame(0, $this->purger()->purgeBySkus([]));
-        $this->assertSame([], $this->logger->warnings);
     }
 
     private function purger(): NullKeyPatternPurger

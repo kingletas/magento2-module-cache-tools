@@ -13,11 +13,11 @@ use Commerce\CacheTools\Model\Fastly\PurgeGuard;
 use Commerce\CacheTools\Model\Fastly\Purger;
 use Commerce\CacheTools\Model\Fastly\ServiceIdProvider;
 use Commerce\CacheTools\Model\Warmer\RewarmPublisher;
-use Commerce\CacheTools\Test\Unit\Fake\RecordingLogger;
 use Fastly\Api\PurgeApi;
 use Magento\Framework\Phrase;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
 
 class PurgerTest extends TestCase
@@ -32,7 +32,7 @@ class PurgerTest extends TestCase
     private bool $softDefault = true;
     private ?Phrase $blockReason = null;
     private ?\Throwable $apiFailure = null;
-    private RecordingLogger $logger;
+    private LoggerInterface&MockObject $logger;
 
     protected function setUp(): void
     {
@@ -42,7 +42,7 @@ class PurgerTest extends TestCase
         $this->softDefault = true;
         $this->blockReason = null;
         $this->apiFailure = null;
-        $this->logger = new RecordingLogger();
+        $this->logger = $this->createMock(LoggerInterface::class);
     }
 
     public function testAUrlIsPurgedAndReportedAsSuccess(): void
@@ -202,20 +202,22 @@ class PurgerTest extends TestCase
      */
     public function testPurgeAllRefusesWithoutExplicitConfirmation(): void
     {
+        $this->logger->expects($this->once())->method('warning');
+
         $result = $this->purger()->purgeAll();
 
         $this->assertFalse($result->isSuccess);
         $this->assertSame([], $this->calls);
-        $this->assertCount(1, $this->logger->warnings);
     }
 
     public function testAConfirmedPurgeAllRunsAndIsWarnedAbout(): void
     {
+        $this->logger->expects($this->once())->method('warning');
+
         $result = $this->purger()->purgeAll(true);
 
         $this->assertTrue($result->isSuccess);
         $this->assertSame('purgeAll', $this->calls[0]['call']);
-        $this->assertCount(1, $this->logger->warnings);
     }
 
     /**
@@ -243,6 +245,8 @@ class PurgerTest extends TestCase
      */
     public function testAFailedPurgeReportsAStableSentenceAndLogsTheDetail(): void
     {
+        $this->logger->expects($this->once())->method('error');
+
         $this->apiFailure = new RuntimeException('403 Forbidden: invalid token tok_secret');
 
         $result = $this->purger()->purgeUrl('https://shop.test/a.html');
@@ -250,7 +254,6 @@ class PurgerTest extends TestCase
         $this->assertFalse($result->isSuccess);
         $this->assertStringNotContainsString('tok_secret', (string) $result->message);
         $this->assertStringContainsString('see the log', (string) $result->message);
-        $this->assertCount(1, $this->logger->errors);
     }
 
     private function purger(): Purger

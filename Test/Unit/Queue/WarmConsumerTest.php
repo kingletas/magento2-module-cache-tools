@@ -13,13 +13,13 @@ use Commerce\CacheTools\Model\Warmer\Run\WarmRunTracker;
 use Commerce\CacheTools\Model\Warmer\WarmResult;
 use Commerce\CacheTools\Queue\WarmConsumer;
 use Commerce\CacheTools\Test\Unit\Fake\PassthroughLock;
-use Commerce\CacheTools\Test\Unit\Fake\RecordingLogger;
 use Magento\Framework\App\Area;
 use Magento\Framework\App\State;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Serialize\Serializer\Json;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
 
 class WarmConsumerTest extends TestCase
@@ -40,7 +40,7 @@ class WarmConsumerTest extends TestCase
     private ?\Throwable $warmFailure = null;
     private bool $areaAlreadySet = false;
     private PassthroughLock $lock;
-    private RecordingLogger $logger;
+    private LoggerInterface&MockObject $logger;
 
     protected function setUp(): void
     {
@@ -52,7 +52,7 @@ class WarmConsumerTest extends TestCase
         $this->warmFailure = null;
         $this->areaAlreadySet = false;
         $this->lock = new PassthroughLock();
-        $this->logger = new RecordingLogger();
+        $this->logger = $this->createMock(LoggerInterface::class);
     }
 
     public function testABatchIsWarmedAndItsProgressRecorded(): void
@@ -112,6 +112,10 @@ class WarmConsumerTest extends TestCase
      */
     public function testASkippedBatchWarnsThatTheRunWillNotReachItsTotal(): void
     {
+        $this->logger->expects($this->once())
+            ->method('warning')
+            ->with($this->stringContains('will not reach its total'));
+
         $message = $this->message(7, BatchQueuer::TYPE_SIMPLE, [10, 11]);
         $consumer = $this->consumer();
 
@@ -122,8 +126,6 @@ class WarmConsumerTest extends TestCase
         $consumer->process($message);
 
         $this->assertSame([], $this->warmed);
-        $this->assertCount(1, $this->logger->warnings);
-        $this->assertStringContainsString('will not reach its total', $this->logger->warnings[0]);
     }
 
     /**
@@ -132,12 +134,13 @@ class WarmConsumerTest extends TestCase
      */
     public function testABatchThatFailsEntirelyIsStillCountedAgainstTheRun(): void
     {
+        $this->logger->expects($this->once())->method('error');
+
         $this->warmFailure = new RuntimeException('collection blew up');
 
         $this->consumer()->process($this->message(7, BatchQueuer::TYPE_SIMPLE, [10, 11]));
 
         $this->assertSame([['runId' => 7, 'processed' => 2, 'failed' => 2]], $this->progress);
-        $this->assertCount(1, $this->logger->errors);
     }
 
     /**
@@ -155,21 +158,24 @@ class WarmConsumerTest extends TestCase
 
     public function testPerProductFailuresAreReportedAgainstTheRun(): void
     {
+        $this->logger->expects($this->once())
+            ->method('warning')
+            ->with($this->stringContains('SKU-2'));
+
         $this->result = new WarmResult(2, 1, ['Failed warming simple product SKU-2: media row is corrupt']);
 
         $this->consumer()->process($this->message(7, BatchQueuer::TYPE_SIMPLE, [10, 11]));
 
         $this->assertSame([['runId' => 7, 'processed' => 2, 'failed' => 1]], $this->progress);
-        $this->assertCount(1, $this->logger->warnings);
-        $this->assertStringContainsString('SKU-2', $this->logger->warnings[0]);
     }
 
     public function testEveryBatchLeavesATraceOfWhatItWarmed(): void
     {
-        $this->consumer()->process($this->message(7, BatchQueuer::TYPE_SIMPLE, [10, 11]));
+        $this->logger->expects($this->once())
+            ->method('info')
+            ->with($this->stringContains('warmed 2 of 2'));
 
-        $this->assertCount(1, $this->logger->infos);
-        $this->assertStringContainsString('warmed 2 of 2', $this->logger->infos[0]);
+        $this->consumer()->process($this->message(7, BatchQueuer::TYPE_SIMPLE, [10, 11]));
     }
 
     /**
@@ -178,14 +184,17 @@ class WarmConsumerTest extends TestCase
      */
     public function testAnUnparseableMessageIsDiscardedWithAWarning(): void
     {
+        $this->logger->expects($this->once())->method('warning');
+
         $this->consumer()->process('{not json');
 
         $this->assertSame([], $this->warmed);
-        $this->assertCount(1, $this->logger->warnings);
     }
 
     public function testAMessageMissingAnyOfItsPartsIsDiscarded(): void
     {
+        $this->logger->expects($this->exactly(4))->method('warning');
+
         $consumer = $this->consumer();
 
         $consumer->process($this->message(0, BatchQueuer::TYPE_SIMPLE, [10]));
@@ -194,7 +203,6 @@ class WarmConsumerTest extends TestCase
         $consumer->process('"just a string"');
 
         $this->assertSame([], $this->warmed);
-        $this->assertCount(4, $this->logger->warnings);
     }
 
     /**

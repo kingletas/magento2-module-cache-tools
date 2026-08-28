@@ -9,10 +9,10 @@ namespace Commerce\CacheTools\Test\Unit\Model\Cache;
 
 use Commerce\CacheTools\Api\KeyPatternPurgerInterface;
 use Commerce\CacheTools\Model\Cache\RedisKeyPatternPurger;
-use Commerce\CacheTools\Test\Unit\Fake\RecordingLogger;
 use Magento\Framework\App\DeploymentConfig;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use ReflectionMethod;
 
 /**
@@ -31,13 +31,13 @@ class RedisKeyPatternPurgerTest extends TestCase
     /** @var string[] Paths the deployment config was asked for. */
     private array $configLookups = [];
 
-    private RecordingLogger $logger;
+    private LoggerInterface&MockObject $logger;
 
     protected function setUp(): void
     {
         $this->connectionOptions = ['server' => '127.0.0.1', 'port' => 6379, 'database' => 0];
         $this->configLookups = [];
-        $this->logger = new RecordingLogger();
+        $this->logger = $this->createMock(LoggerInterface::class);
     }
 
     public function testItSatisfiesThePurgerContract(): void
@@ -50,11 +50,13 @@ class RedisKeyPatternPurgerTest extends TestCase
      */
     public function testAnUndeclaredConnectionIsRefusedRatherThanGuessed(): void
     {
+        $this->logger->expects($this->once())
+            ->method('error')
+            ->with($this->stringContains('key-pattern purging is unavailable'));
+
         $this->connectionOptions = null;
 
         $this->assertFalse($this->purger()->isSupported());
-        $this->assertCount(1, $this->logger->errors);
-        $this->assertStringContainsString('key-pattern purging is unavailable', $this->logger->errors[0]);
     }
 
     /**
@@ -71,10 +73,10 @@ class RedisKeyPatternPurgerTest extends TestCase
 
         foreach ($halfDeclared as $options) {
             $this->connectionOptions = $options;
-            $this->logger = new RecordingLogger();
+            $this->logger = $this->createMock(LoggerInterface::class);
+            $this->logger->expects($this->once())->method('error');
 
             $this->assertFalse($this->purger()->isSupported());
-            $this->assertCount(1, $this->logger->errors);
         }
     }
 
@@ -84,12 +86,15 @@ class RedisKeyPatternPurgerTest extends TestCase
      */
     public function testTheDeploymentConfigPathIsConfigurable(): void
     {
+        $this->logger->expects($this->once())
+            ->method('error')
+            ->with($this->stringContains('cache/frontend/page_cache'));
+
         $this->connectionOptions = null;
 
         $this->purger('cache/frontend/page_cache/backend_options')->isSupported();
 
         $this->assertSame(['cache/frontend/page_cache/backend_options'], $this->configLookups);
-        $this->assertStringContainsString('cache/frontend/page_cache', $this->logger->errors[0]);
     }
 
     /**
@@ -98,14 +103,14 @@ class RedisKeyPatternPurgerTest extends TestCase
      */
     public function testAnUnusableConnectionIsOnlyReportedOnce(): void
     {
+        $this->logger->expects($this->once())->method('error');
+
         $this->connectionOptions = null;
         $purger = $this->purger();
 
         $purger->isSupported();
         $purger->isSupported();
         $purger->purgeBySkus(['SKU-1']);
-
-        $this->assertCount(1, $this->logger->errors);
     }
 
     public function testNothingIsPurgedWithoutAUsableConnection(): void

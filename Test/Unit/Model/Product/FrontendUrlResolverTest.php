@@ -8,7 +8,6 @@ declare(strict_types=1);
 namespace Commerce\CacheTools\Test\Unit\Model\Product;
 
 use Commerce\CacheTools\Model\Product\FrontendUrlResolver;
-use Commerce\CacheTools\Test\Unit\Fake\RecordingLogger;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\CatalogUrlRewrite\Model\ProductUrlRewriteGenerator;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -18,6 +17,7 @@ use Magento\UrlRewrite\Model\UrlFinderInterface;
 use Magento\UrlRewrite\Service\V1\Data\UrlRewrite;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
 
 class FrontendUrlResolverTest extends TestCase
@@ -37,7 +37,7 @@ class FrontendUrlResolverTest extends TestCase
     private ?int $requestedStore = null;
     private ?\Throwable $storeFailure = null;
     private ?\Throwable $finderFailure = null;
-    private RecordingLogger $logger;
+    private LoggerInterface&MockObject $logger;
 
     protected function setUp(): void
     {
@@ -50,7 +50,7 @@ class FrontendUrlResolverTest extends TestCase
         $this->requestedStore = null;
         $this->storeFailure = null;
         $this->finderFailure = null;
-        $this->logger = new RecordingLogger();
+        $this->logger = $this->createMock(LoggerInterface::class);
     }
 
     public function testTheStorefrontUrlIsBuiltFromTheRewriteAndTheStoresBaseUrl(): void
@@ -109,10 +109,11 @@ class FrontendUrlResolverTest extends TestCase
      */
     public function testAProductWithNoRewriteResolvesToNothing(): void
     {
+        $this->logger->expects($this->once())->method('info');
+
         $this->rewrites = [];
 
         $this->assertSame('', $this->resolver()->resolve($this->product(), 1));
-        $this->assertCount(1, $this->logger->infos);
     }
 
     public function testAStoreThatDoesNotResolveGivesNoUrl(): void
@@ -138,10 +139,11 @@ class FrontendUrlResolverTest extends TestCase
      */
     public function testAFailingRewriteLookupIsContainedAndLogged(): void
     {
+        $this->logger->expects($this->once())->method('warning');
+
         $this->finderFailure = new RuntimeException('rewrite table is missing');
 
         $this->assertSame('', $this->resolver()->resolve($this->product(), 1));
-        $this->assertCount(1, $this->logger->warnings);
     }
 
     /**
