@@ -4,6 +4,10 @@
 # allowed to pass vacuously.
 parameters:
     level: 6
+    # Registers the on-demand generator, so a Factory that only exists
+    # after `setup:di:compile` resolves here too.
+    bootstrapFiles:
+        - Test/generated-classes.php
     paths:
         - Api
         - Console
@@ -19,6 +23,11 @@ parameters:
         - Test/*
     treatPhpDocTypesAsCertain: false
     ignoreErrors:
-        # Magento's models expose their columns through __call, so every
-        # getter on a core model is invisible to static analysis.
-        - '#Call to an undefined method Magento\\[A-Za-z\\]+::(get|set|has)[A-Za-z]+\(\)#'
+        # adminhtml configures Result\\PageFactory with the backend Page, which is
+        # where setActiveMenu lives; core's own grids call it exactly this way.
+        -
+            message: '#Call to an undefined method Magento\\Framework\\View\\Result\\Page::setActiveMenu\(\)#'
+            path: Controller/Adminhtml/WarmRun/Index.php
+        # __() returns a Phrase, and Magento's own controllers hand one to this
+        # API; the parameter is documented as string and never was.
+        - '#of method Magento\\Framework\\View\\Page\\Title::(set|prepend)\(\) expects string, Magento\\Framework\\Phrase given#'

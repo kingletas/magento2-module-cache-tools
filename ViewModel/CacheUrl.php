@@ -13,6 +13,7 @@ use Commerce\CacheTools\Model\Config;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\UrlInterface;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
+use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
 use Throwable;
 
@@ -45,7 +46,7 @@ class CacheUrl implements ArgumentInterface
 
         try {
             foreach ($this->storeManager->getStores() as $store) {
-                if ($store->isActive()) {
+                if ($store instanceof Store && $store->getIsActive()) {
                     $urls[] = rtrim($store->getBaseUrl(), '/') . '/';
                 }
             }

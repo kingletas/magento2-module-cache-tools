@@ -63,6 +63,7 @@ class ProductCacheWarmer implements WarmTaskInterface
 
         $warmed = 0;
         $messages = [];
+        /** @var ProductInterface[] $items */
         $items = $collection->getItems();
 
         foreach ($items as $product) {

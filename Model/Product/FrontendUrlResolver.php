@@ -11,7 +11,6 @@ namespace Commerce\CacheTools\Model\Product;
 
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\CatalogUrlRewrite\Model\ProductUrlRewriteGenerator;
-use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\UrlRewrite\Model\UrlFinderInterface;
@@ -74,7 +73,7 @@ class FrontendUrlResolver
         $urls = [];
 
         foreach ($this->storeManager->getStores() as $store) {
-            if (!$store->isActive()) {
+            if (!$store->getIsActive()) {
                 continue;
             }
 
@@ -102,7 +101,7 @@ class FrontendUrlResolver
         return $rewrite === null ? '' : (string) $rewrite->getRequestPath();
     }
 
-    private function resolveStore(?int $storeId): ?StoreInterface
+    private function resolveStore(?int $storeId): ?Store
     {
         try {
             $store = $this->storeManager->getStore($storeId ?? null);
@@ -110,10 +109,14 @@ class FrontendUrlResolver
             return null;
         }
 
+        if (!$store instanceof Store) {
+            return null;
+        }
+
         // The admin store has no frontend base URL worth purging.
         if ((int) $store->getId() === Store::DEFAULT_STORE_ID) {
             foreach ($this->storeManager->getStores() as $candidate) {
-                if ($candidate->isActive()) {
+                if ($candidate instanceof Store && $candidate->getIsActive()) {
                     return $candidate;
                 }
             }

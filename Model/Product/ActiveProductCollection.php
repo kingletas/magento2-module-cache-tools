@@ -51,7 +51,7 @@ class ActiveProductCollection
     {
         $collection = $this->collectionFactory->create();
         $collection->addFieldToFilter('type_id', $typeId);
-        $collection->addAttributeToFilter('status', Status::STATUS_ENABLED);
+        $collection->addAttributeToFilter('status', ['eq' => Status::STATUS_ENABLED]);
         // Not-visible-individually products are the child variants of a
         // configurable; the parent's warm covers them.
         $collection->addAttributeToFilter('visibility', ['neq' => Visibility::VISIBILITY_NOT_VISIBLE]);

@@ -46,7 +46,10 @@ class WarmRunTracker
         $collection->addFieldToFilter(WarmRunInterface::STATUS, WarmRunInterface::STATUS_RUNNING);
         $collection->setOrder(WarmRunInterface::RUN_ID, 'ASC');
 
-        return array_values($collection->getItems());
+        /** @var WarmRun[] $runs */
+        $runs = array_values($collection->getItems());
+
+        return $runs;
     }
 
     public function open(string $warmType, int $totalProducts): int

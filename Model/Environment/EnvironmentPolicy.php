@@ -11,6 +11,7 @@ namespace Commerce\CacheTools\Model\Environment;
 
 use Commerce\CacheTools\Model\Config;
 use Magento\Framework\App\DeploymentConfig;
+use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
 use Throwable;
 
@@ -54,7 +55,11 @@ class EnvironmentPolicy
     public function getHost(): string
     {
         try {
-            return $this->hostResolver->resolve((string) $this->storeManager->getStore()->getBaseUrl());
+            $store = $this->storeManager->getStore();
+
+            return $store instanceof Store
+                ? $this->hostResolver->resolve((string) $store->getBaseUrl())
+                : '';
         } catch (Throwable) {
             return '';
         }

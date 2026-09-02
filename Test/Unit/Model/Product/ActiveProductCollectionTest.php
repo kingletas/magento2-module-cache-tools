@@ -66,7 +66,7 @@ class ActiveProductCollectionTest extends TestCase
         $this->collection()->forSimple();
 
         $this->assertContains(
-            ['field' => 'status', 'condition' => Status::STATUS_ENABLED],
+            ['field' => 'status', 'condition' => ['eq' => Status::STATUS_ENABLED]],
             $this->attributeFilters
         );
     }
@@ -94,7 +94,7 @@ class ActiveProductCollectionTest extends TestCase
 
         $this->assertSame([[10, 11]], $this->idFilters);
         $this->assertContains(
-            ['field' => 'status', 'condition' => Status::STATUS_ENABLED],
+            ['field' => 'status', 'condition' => ['eq' => Status::STATUS_ENABLED]],
             $this->attributeFilters
         );
     }

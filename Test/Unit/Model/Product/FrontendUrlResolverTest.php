@@ -263,7 +263,7 @@ class FrontendUrlResolverTest extends TestCase
     {
         $store = $this->createMock(Store::class);
         $store->method('getId')->willReturn($storeId);
-        $store->method('isActive')->willReturn($this->stores[$storeId]['active']);
+        $store->method('getIsActive')->willReturn($this->stores[$storeId]['active']);
         $store->method('getBaseUrl')->willReturn($this->stores[$storeId]['baseUrl']);
 
         return $store;

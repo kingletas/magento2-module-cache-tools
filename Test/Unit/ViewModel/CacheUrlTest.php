@@ -150,7 +150,7 @@ class CacheUrlTest extends TestCase
                 foreach ($this->stores as $storeId => $definition) {
                     $store = $this->createMock(Store::class);
                     $store->method('getId')->willReturn($storeId);
-                    $store->method('isActive')->willReturn($definition['active']);
+                    $store->method('getIsActive')->willReturn($definition['active']);
                     $store->method('getBaseUrl')->willReturn($definition['baseUrl']);
                     $stores[] = $store;
                 }

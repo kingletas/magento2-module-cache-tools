@@ -156,10 +156,16 @@ Also available as a button on **System → Cache Management**.
 ## Tests
 
 ```bash
-M2_VENDOR=/path/to/magento/vendor php ../dev/run-tests.php -c ../dev/phpunit.xml
+make check
 ```
 
-The suite runs against a real Magento installation without being installed into it. `dev/bootstrap.php` builds a PSR-4-only autoloader from that installation's composer map, which is also why it works where the host's own `vendor/autoload.php` is broken.
+The coding standard and all four suites — 364 tests, no database and no Magento bootstrap. Narrow it to one suite with `SUITE`:
+
+```bash
+make test SUITE=behaviour
+```
+
+The suites run against a real Magento installation without being installed into it. `M2_VENDOR` names that installation's `vendor` directory, and `Test/bootstrap.php` builds an autoloader from its composer map — which is also why they work where the host's own `vendor/autoload.php` is broken.
 
 ---
 
