@@ -28,6 +28,11 @@ parameters:
         -
             message: '#Call to an undefined method Magento\\Framework\\View\\Result\\Page::setActiveMenu\(\)#'
             path: Controller/Adminhtml/WarmRun/Index.php
+            # The framework's docblock varies across the versions this package supports.
+            reportUnmatched: false
         # __() returns a Phrase, and Magento's own controllers hand one to this
         # API; the parameter is documented as string and never was.
-        - '#of method Magento\\Framework\\View\\Page\\Title::(set|prepend)\(\) expects string, Magento\\Framework\\Phrase given#'
+        -
+            message: '#of method Magento\\Framework\\View\\Page\\Title::(set|prepend)\(\) expects string, Magento\\Framework\\Phrase given#'
+            # The framework's docblock varies across the versions this package supports.
+            reportUnmatched: false
