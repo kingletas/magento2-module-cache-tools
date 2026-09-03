@@ -14,7 +14,7 @@ use Commerce\CacheTools\Lock\WarmLock;
 /**
  * The lock, in memory.
  *
- * @SuppressWarnings(PHPMD.MissingConstructor)
+ * @SuppressWarnings("PHPMD.MissingConstructor")
  */
 class PassthroughLock extends WarmLock
 {

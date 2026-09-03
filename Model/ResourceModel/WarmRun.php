@@ -16,7 +16,7 @@ use Zend_Db_Expr;
 /**
  * Magento requires the _construct() initialiser, which trips PHPMD naming.
  *
- * @SuppressWarnings(PHPMD.CamelCaseMethodName)
+ * @SuppressWarnings("PHPMD.CamelCaseMethodName")
  */
 class WarmRun extends AbstractDb
 {

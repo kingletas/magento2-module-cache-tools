@@ -16,7 +16,7 @@ use Magento\Framework\Model\AbstractModel;
 /**
  * One cache-warming cycle, as shown in the admin grid.
  *
- * @SuppressWarnings(PHPMD.CamelCaseMethodName)
+ * @SuppressWarnings("PHPMD.CamelCaseMethodName")
  */
 class WarmRun extends AbstractModel implements WarmRunInterface
 {

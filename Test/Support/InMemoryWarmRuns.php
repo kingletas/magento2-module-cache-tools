@@ -16,7 +16,7 @@ use Magento\Framework\Model\AbstractModel;
 /**
  * The `commerce_cachetools_warm_run` table, in an array.
  *
- * @SuppressWarnings(PHPMD.MissingConstructor)
+ * @SuppressWarnings("PHPMD.MissingConstructor")
  */
 class InMemoryWarmRuns extends WarmRunResource
 {
